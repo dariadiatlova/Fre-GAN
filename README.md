@@ -15,6 +15,5 @@ The are 2 reasons for conducting audio-format conversion:
       Fre-GAN
           |- data
               |- audio
-                 ...
-                 .wav
-                 ...
+              | train.tsv
+              | test.tsv
