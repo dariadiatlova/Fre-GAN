@@ -1,0 +1,4 @@
+librosa~=0.9.1
+# for conda please run `conda install -c conda-forge ffmpeg` to install ffmpeg
+ffmpeg-python~=0.2.0
+ffmpeg~=1.4
