@@ -10,3 +10,11 @@ The dataset consists of 193 hours of recorded speech in `.mp3` format with a sam
 The are 2 reasons for conducting audio-format conversion: 
 - [`hifi-gan`](https://github.com/jik876/hifi-gan/blob/master/) implementation is used as a beseline model for the experiment, and the authors use `.wav` format of audio in theirs implementation;
 - at least with librosa loadig `.wav` files is a bit faster than loading `mp3` files.
+
+
+      Fre-GAN
+          |- data
+              |- audio
+                 ...
+                 .wav
+                 ...
