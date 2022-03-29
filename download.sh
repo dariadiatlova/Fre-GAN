@@ -4,6 +4,9 @@ cd data
 wget https://mozilla-common-voice-datasets.s3.dualstack.us-west-2.amazonaws.com/cv-corpus-8.0-2022-01-19/cv-corpus-8.0-2022-01-19-ru.tar.gz
 tar -xvsf cv-corpus-8.0-2022-01-19-ru.tar.gz
 
+mv cv-corpus-8.0-2022-01-19/ru/train.tsv .
+mv cv-corpus-8.0-2022-01-19/ru/test.tsv .
+
 # downloaded data is in .mp3 here we convert it into wav
 mkdir -p audio
 
