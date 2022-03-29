@@ -17,3 +17,5 @@ The are 2 reasons for conducting audio-format conversion:
               |- audio
               | train.tsv
               | test.tsv
+
+After a [quick look at the dataset](notebooks/audio_length.ipynb) it was decided to pick the audio size of `10 seocnds` for further audio processing.
