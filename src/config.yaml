@@ -1,0 +1,11 @@
+dataset:
+  train_filepath: "train.tsv"
+  val_filepath: "test.tsv"
+  train: False
+  n_channels: 1
+  target_audio_length: 10
+  sr: 48000
+  n_fft: 1024
+  n_mels: 80
+  hop_size: 256
+  win_si1ze: 1024
