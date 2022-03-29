@@ -1,4 +1,11 @@
 librosa~=0.9.1
-# for conda please run `conda install -c conda-forge ffmpeg` to install ffmpeg
-ffmpeg-python~=0.2.0
+ffmpeg-python~=0.2.0 # for conda please run `conda install -c conda-forge ffmpeg`
 ffmpeg~=1.4
+torch~=1.11.0
+numpy~=1.21.5
+pandas~=1.4.1
+omegaconf~=2.1.1
+torchaudio~=0.11.0
+
+# requirements to run tests
+pytest~=7.1.1
