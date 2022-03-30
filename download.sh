@@ -18,7 +18,7 @@ mp3_to_wav() {
   f=$1
   filename="${f##*/}"
   filename="${filename%.*}"
-  ffmpeg -i "$f" -acodec pcm_u8 -ar 48000 "audio/${filename}.wav";
+  ffmpeg -i "$f" "audio/${filename}.wav";
 }
 
 # make a constrain on max number of processes to use
