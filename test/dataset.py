@@ -14,4 +14,4 @@ def test_shapes():
     dataset_config = config["dataset"]
     dataset = MelDataset(dataset_config, train=True)
     for _ in range(100):
-        assert dataset[random.randint(0, len(dataset))].shape == (80, 626), f"Shape mismatch :("
+        assert dataset[random.randint(0, len(dataset))].shape == (80, 173), f"Shape mismatch :("
