@@ -1,10 +1,12 @@
 dataset:
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
+  normalize_spec: True
+  f_max: 8000
   train: False
   n_channels: 1
-  target_audio_length: 10
-  sr: 48000
+  target_audio_length: 1
+  sr: 44100
   n_fft: 1024
   n_mels: 80
   hop_size: 256
