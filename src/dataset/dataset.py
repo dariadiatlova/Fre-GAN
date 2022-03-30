@@ -55,8 +55,9 @@ class MelDataset(Dataset):
                                                                  f"length, but got {audio_file_path} of " \
                                                                  f"length {padded_audio.shape[0]}"
 
-        mel_spectrogram = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.sr)
-        return mel_spectrogram
+        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft,
+                                                 self.sr, self.f_max, self.normalize_spec)
+        return mel_spectrogram_db
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
         """
