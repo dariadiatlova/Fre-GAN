@@ -95,9 +95,6 @@ class RSD(nn.Module):
         return x
 
     def forward(self, y: torch.Tensor, y_hat: torch.Tensor):
-        cached_y_outs = []
-        cached_y_hat_outs = []
-
         y_disc_real = []
         y_disc_generated = []
         real_feature_maps = []
