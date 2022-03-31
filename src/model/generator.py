@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 
 
-class RCG(nn.Module):
+class DilatedResidualBlock(nn.Module):
     def __init__(self, channels: int, kernel_size: int, negative_slope: int):
-        super(RCG, self).__init__()
+        super(DilatedResidualBlock, self).__init__()
         self.dilated_convolutions = nn.ModuleList([
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
                       padding=self.__get_padding_size(kernel_size, 1)),
@@ -44,9 +44,9 @@ class RCG(nn.Module):
         return x + residual
 
 
-class Generator(nn.Module):
+class RCG(nn.Module):
     def __init__(self, config: Dict):
-        super(Generator, self).__init__()
+        super(RCG, self).__init__()
 
         for key, value in config.items():
             setattr(self, key, value)
@@ -91,7 +91,7 @@ class Generator(nn.Module):
         resblocks = nn.ModuleList()
         for channels in self.channels:
             for kernel_size in self.kernel_sizes:
-                resblocks.append(RCG(channels, kernel_size, self.negative_slope))
+                resblocks.append(DilatedResidualBlock(channels, kernel_size, self.negative_slope))
         return resblocks
 
     def __conditioning(self, n_block: int, x: torch.Tensor):
