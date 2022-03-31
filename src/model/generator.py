@@ -7,7 +7,7 @@ import torch.nn as nn
 class RCG(nn.Module):
     def __init__(self, channels: int, kernel_size: int, negative_slope: int):
         super(RCG, self).__init__()
-        self.dilated_convolutions = [
+        self.dilated_convolutions = nn.ModuleList([
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
                       padding=self.__get_padding_size(kernel_size, 1)),
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(3,),
@@ -16,9 +16,9 @@ class RCG(nn.Module):
                       padding=self.__get_padding_size(kernel_size, 5)),
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(7,),
                       padding=self.__get_padding_size(kernel_size, 7)),
-        ]
+        ])
 
-        self.convolutions = [
+        self.convolutions = nn.ModuleList([
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
                       padding=self.__get_padding_size(kernel_size, 1)),
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
@@ -28,7 +28,7 @@ class RCG(nn.Module):
             nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
                       padding=self.__get_padding_size(kernel_size, 1)),
 
-        ]
+        ])
 
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
@@ -57,26 +57,26 @@ class Generator(nn.Module):
         self.conv_out = nn.Conv1d(16, 1, kernel_size=(7,), stride=(1,), padding=(3,))
         self.leaky_relu = nn.LeakyReLU(negative_slope=self.negative_slope)
 
-        self.conv_transposed_block = [
+        self.conv_transposed_block = nn.ModuleList([
             nn.ConvTranspose1d(512, 256, kernel_size=(16,), stride=(8,), padding=(4,)),
             nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,)),
             nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(32, 16, kernel_size=(4,), stride=(2,), padding=(1,))
-        ]
+        ])
 
-        self.residual_up_sampling = [
+        self.residual_up_sampling = nn.ModuleList([
             nn.Sequential(nn.Upsample(scale_factor=2, mode='nearest'), nn.Conv1d(128, 64, kernel_size=(1,))),
             nn.Sequential(nn.Upsample(scale_factor=2, mode='nearest'), nn.Conv1d(64, 32, kernel_size=(1,))),
             nn.Sequential(nn.Upsample(scale_factor=2, mode='nearest'), nn.Conv1d(32, 16, kernel_size=(1,)))
-        ]
+        ])
 
-        self.condition_up_sampling = [
+        self.condition_up_sampling = nn.ModuleList([
             nn.ConvTranspose1d(80, 256, kernel_size=(16,), stride=(8,), padding=(4,)),
             nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,)),
             nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,)),
-        ]
+        ])
 
         self.residual_blocks = self.__initialise_resblocks()
 
@@ -88,7 +88,7 @@ class Generator(nn.Module):
         """
         Creates multiple residual blocks for MRF block
         """
-        resblocks = []
+        resblocks = nn.ModuleList()
         for channels in self.channels:
             for kernel_size in self.kernel_sizes:
                 resblocks.append(RCG(channels, kernel_size, self.negative_slope))
