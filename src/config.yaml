@@ -11,3 +11,11 @@ dataset:
   n_mels: 80
   hop_size: 256
   win_si1ze: 1024
+
+generator:
+  top_k: 4
+  n_conv_blocks: 5
+  num_kernels: 3
+  negative_slope: 0.1
+  channels: [256, 128, 64, 32, 16]
+  kernel_sizes: [16, 8, 4, 4, 4]
