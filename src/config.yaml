@@ -5,17 +5,22 @@ dataset:
   f_max: 8000
   train: False
   n_channels: 1
-  target_audio_length: 1
+  target_audio_length: 44112
   sr: 44100
   n_fft: 1024
   n_mels: 80
   hop_size: 256
   win_si1ze: 1024
 
-generator:
+rcg:
   top_k: 4
   n_conv_blocks: 5
   num_kernels: 3
   negative_slope: 0.1
   channels: [256, 128, 64, 32, 16]
-  kernel_sizes: [16, 8, 4, 4, 4]
+  kernel_sizes: [3, 7, 11]
+
+rpd:
+
+
+rsd:
