@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from DWT import DiscreteWaveletTransform
+from src.model.dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
@@ -36,30 +36,37 @@ class SubDiscriminator(nn.Module):
         self.dwt_cache = None
 
     def __get_dwt(self, x):
+
         if self.dwt_cache is None:
             x_wavelet_high, x_wavelet_low = self.DWT(x)
+
+            # [bs, 1, 22051] * 2
             self.dwt_cache = [x_wavelet_high, x_wavelet_low]
             x = torch.cat(self.dwt_cache, dim=1)
 
         elif len(self.dwt_cache) == 2:
-            x_wavelet_high, x_wavelet_low = self.dwt_cache
-            x_wavelet_high_one, x_wavelet_low_one = self.DWT(x_wavelet_high)
-            x_wavelet_high_two, x_wavelet_low_two = self.DWT(x_wavelet_low)
+            wavelet1, wavelet2 = self.dwt_cache
+            x_wavelet_high_one, x_wavelet_low_one = self.DWT(wavelet1)
+            x_wavelet_high_two, x_wavelet_low_two = self.DWT(wavelet2)
+
+            # [bs, 1, 11026] * 4
             self.dwt_cache = [x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two]
             x = torch.cat(self.dwt_cache, dim=1)
 
         else:
-            x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two = self.dwt_cache
+            wavelet1, wavelet2, wavelet3, wavelet4 = self.dwt_cache
+            x_wavelet_high_one, x_wavelet_low_one = self.DWT(wavelet1)
+            x_wavelet_high_two, x_wavelet_low_two = self.DWT(wavelet2)
+            x_wavelet_high_three, x_wavelet_low_three = self.DWT(wavelet3)
+            x_wavelet_high_four, x_wavelet_low_four = self.DWT(wavelet4)
 
-            x_wavelet_high_one, x_wavelet_low_one = self.DWT(x_wavelet_high_one)
-            x_wavelet_high_two, x_wavelet_low_two = self.DWT(x_wavelet_low_one)
-            x_wavelet_high_three, x_wavelet_low_three = self.DWT(x_wavelet_high_two)
-            x_wavelet_high_four, x_wavelet_low_four = self.DWT(x_wavelet_low_two)
-
+            # [bs, 1, 5513] * 8
             self.dwt_cache = [x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two,
                               x_wavelet_high_three, x_wavelet_low_three, x_wavelet_high_four, x_wavelet_low_four]
 
             x = torch.cat(self.dwt_cache, dim=1)
+
+            self.dwt_cache = None
         return x
 
     def forward(self, x: torch.Tensor):
@@ -76,7 +83,7 @@ class SubDiscriminator(nn.Module):
             x_out = F.pad(x_out, (0, n_pad), "reflect")
             time_length += n_pad
             x_out = x_out.view(batch_size, channels, time_length // self.period, self.period)
-            x_out = self.projection_layer(x_out)
+            x_out = projection_layer(x_out)
             cached_x_outs.append(x_out)
 
         n_pad = self.period - (_time_length % self.period)
@@ -91,7 +98,7 @@ class SubDiscriminator(nn.Module):
             if i < 3:
                 x = torch.cat([x, cached_x_outs[i]], dim=2)
 
-        x = self.self.convolution_out_layer(x)
+        x = self.convolution_out_layer(x)
         feature_map.append(x)
         x = torch.flatten(x, 1, -1)
         return x, feature_map

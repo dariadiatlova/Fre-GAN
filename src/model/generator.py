@@ -39,6 +39,7 @@ class DilatedResidualBlock(nn.Module):
     def forward(self, x: torch.Tensor) -> None:
         residual = x
         for dilated_conv_layer, conv_layer in zip(self.dilated_convolutions, self.convolutions):
+
             x = dilated_conv_layer(self.leaky_relu(x))
             x = conv_layer(self.leaky_relu(x))
         return x + residual
@@ -58,8 +59,8 @@ class RCG(nn.Module):
         self.leaky_relu = nn.LeakyReLU(negative_slope=self.negative_slope)
 
         self.conv_transposed_block = nn.ModuleList([
-            nn.ConvTranspose1d(512, 256, kernel_size=(16,), stride=(8,), padding=(4,)),
-            nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,)),
+            nn.ConvTranspose1d(512, 256, kernel_size=(12,), stride=(8,), padding=(4,)),
+            nn.ConvTranspose1d(256, 128, kernel_size=(4,), stride=(4,), padding=(3,)),
             nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(32, 16, kernel_size=(4,), stride=(2,), padding=(1,))
@@ -72,8 +73,8 @@ class RCG(nn.Module):
         ])
 
         self.condition_up_sampling = nn.ModuleList([
-            nn.ConvTranspose1d(80, 256, kernel_size=(16,), stride=(8,), padding=(4,)),
-            nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,)),
+            nn.ConvTranspose1d(80, 256, kernel_size=(12,), stride=(8,), padding=(4,)),
+            nn.ConvTranspose1d(256, 128, kernel_size=(4,), stride=(4,), padding=(3,)),
             nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,)),
             nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,)),
         ])
@@ -100,9 +101,9 @@ class RCG(nn.Module):
         In the article conditioning is happening for last k=4 conv blocks.
         :param n_block: int, serial block number.
         :param x: torch.Tensor, input of the n_block.
-        :param mel_spectrogram: torch.Tensor, initial input mel_spectrogram.
         :return: torch.Tensor
         """
+
         if n_block < self.conditioning_level:
             return x
 
@@ -133,6 +134,7 @@ class RCG(nn.Module):
             self.dilated_residual = self.residual_blocks[residual_idx](x)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+
         self.res_block_output = None
         self.mel_spectrogram = x
         x = self.conv1(x)

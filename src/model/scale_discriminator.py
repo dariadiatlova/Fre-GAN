@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from DWT import DiscreteWaveletTransform
+from dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
@@ -11,7 +11,7 @@ class SubDiscriminator(nn.Module):
 
         self.dwt_conv_layers = nn.ModuleList([
             nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7),
-            nn.Conv1d(2, 128, kernel_size=(41,), stride=(2,), padding=20),
+            nn.Conv1d(4, 128, kernel_size=(41,), stride=(2,), padding=20),
             ])
 
         self.convolution_layers = nn.ModuleList([
@@ -24,7 +24,7 @@ class SubDiscriminator(nn.Module):
             nn.Conv1d(1024, 1024, kernel_size=(5,), stride=(1,), padding=2),
         ])
 
-        self.convolution_out_layer = nn.Conv2d(1024, 1, kernel_size=(3,), stride=(1,), padding=(1, 0))
+        self.convolution_out_layer = nn.Conv1d(1024, 1, kernel_size=(3,), stride=(1,), padding=1)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
         self.dwt_cache = None
 
@@ -40,6 +40,7 @@ class SubDiscriminator(nn.Module):
             x_wavelet_high_two, x_wavelet_low_two = self.DWT(x_wavelet_low)
             self.dwt_cache = [x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two]
             x = torch.cat(self.dwt_cache, dim=1)
+            self.dwt_cache = None
         return x
 
     def forward(self, x: torch.Tensor):
@@ -79,19 +80,19 @@ class RSD(nn.Module):
             nn.Conv1d(4, 1, kernel_size=(1,), stride=(1,), padding=0),
             ])
         self.discriminators = nn.ModuleList([SubDiscriminator(), SubDiscriminator(), SubDiscriminator()])
-        self.dwt_cache = None
+        self.dwt_cache = {}
 
-    def __get_dwt(self, x):
-        if self.dwt_cache is None:
+    def __get_dwt(self, x, i, cache_name):
+        if i == 0:
             x_wavelet_high, x_wavelet_low = self.DWT(x)
-            self.dwt_cache = [x_wavelet_high, x_wavelet_low]
-            x = torch.cat(self.dwt_cache, dim=1)
+            self.dwt_cache[cache_name] = [x_wavelet_high, x_wavelet_low]
+            x = torch.cat(self.dwt_cache[cache_name], dim=1)
         else:
-            x_wavelet_high, x_wavelet_low = self.dwt_cache
+            x_wavelet_high, x_wavelet_low = self.dwt_cache[cache_name]
             x_wavelet_high_one, x_wavelet_low_one = self.DWT(x_wavelet_high)
             x_wavelet_high_two, x_wavelet_low_two = self.DWT(x_wavelet_low)
-            self.dwt_cache = [x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two]
-            x = torch.cat(self.dwt_cache, dim=1)
+            self.dwt_cache[cache_name] = [x_wavelet_high_one, x_wavelet_low_one, x_wavelet_high_two, x_wavelet_low_two]
+            x = torch.cat(self.dwt_cache[cache_name], dim=1)
         return x
 
     def forward(self, y: torch.Tensor, y_hat: torch.Tensor):
@@ -103,16 +104,16 @@ class RSD(nn.Module):
         out = y.clone()
         out_hat = y_hat.clone()
 
-        for conv_layer in self.dwt_conv_layers:
-            out = self.__get_dwt(out)
+        for i, conv_layer in enumerate(self.dwt_conv_layers):
+            out = self.__get_dwt(out, i, "y_true")
             out = conv_layer(out)
             y_disc_real.append(out)
 
-            out_hat = self.__get_dwt(out_hat)
+            out_hat = self.__get_dwt(out_hat, i, "y_gen")
             out_hat = conv_layer(out_hat)
             y_disc_generated.append(out_hat)
 
-        for i, discriminator in self.discriminators:
+        for i, discriminator in enumerate(self.discriminators):
             if i < 2:
                 y = y_disc_real[i]
                 y_hat = y_disc_generated[i]
