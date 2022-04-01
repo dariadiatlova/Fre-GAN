@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from dwt import DiscreteWaveletTransform
+from src.model.dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
