@@ -5,13 +5,15 @@ from omegaconf import OmegaConf
 from src.dataset.dataset import MelDataset
 
 
-def test_shapes():
+def test_mel_dataset_shapes():
     """
-    Test checks mel-spec of random 100 audios matches target shape (80, 626).
+    Test checks mel-spec shape and padded audio shapes of random 100 samples from train dataset matches target.
     """
     config = OmegaConf.load("../src/config.yaml")
     config = OmegaConf.to_container(config, resolve=True)
     dataset_config = config["dataset"]
     dataset = MelDataset(dataset_config, train=True)
     for _ in range(100):
-        assert dataset[random.randint(0, len(dataset))].shape == (80, 173), f"Shape mismatch :("
+        assert dataset[random.randint(0, len(dataset))][0].shape == (80, 173), f"Mel-spec shapes mismatch :("
+        assert dataset[random.randint(0, len(dataset))][1].shape == dataset_config["target_audio_length"], \
+            f"Padded audio shape doesn't match target_audio_length in config :("
