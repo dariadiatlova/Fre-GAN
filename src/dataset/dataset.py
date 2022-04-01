@@ -1,6 +1,6 @@
 import torch
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from collections import defaultdict
 
 from torch.utils.data import Dataset
@@ -8,6 +8,10 @@ from torch.utils.data import Dataset
 from data import DATA_PATH
 from src.dataset.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, \
     get_mel_spectrogram
+
+# DEBUG
+from os import listdir
+from os.path import isfile, join
 
 
 class MelDataset(Dataset):
@@ -28,16 +32,19 @@ class MelDataset(Dataset):
             tsv_filepath = self.val_filepath
 
         self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
-        self._mel_cached = defaultdict(lambda: None)
 
-        self._target_audio_size = self.sr * self.target_audio_length
+        # DEBUG
+        # main_path = f"{DATA_PATH}/audio/"
+        # self.audio_files = [main_path + f for f in listdir(main_path) if isfile(join(main_path, f))]
+
+        self._mel_cached = defaultdict(lambda: None)
         self._n_samples = len(self.audio_files)
 
-    def __compute_mel_spectrogram(self, audio_file_path: str) -> torch.Tensor:
+    def __compute_mel_spectrogram(self, audio_file_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Function takes the path to an audio file and returns it's mel spectrogram.
         :param audio_file_path:
-        :return: torch.Tensor
+        :return: 2 tensors: mel-spectrogram and original audio padded/truncated to the target_audio_length.
         """
         audio = load_audio(audio_file_path, self.sr, self._log_file)
 
@@ -50,14 +57,14 @@ class MelDataset(Dataset):
         norm_audio = normalize_amplitudes(audio)
 
         # pad from both sides or / truncate from right
-        padded_audio = pad_input_audio_signal(norm_audio, self._target_audio_size)
-        assert padded_audio.shape[0] == self._target_audio_size, f"Expected all audios to be {self._target_audio_size}" \
-                                                                 f"length, but got {audio_file_path} of " \
-                                                                 f"length {padded_audio.shape[0]}"
+        padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
+        assert padded_audio.shape[0] == self.target_audio_length, f"Expected all audios to be " \
+                                                                  f"{self.target_audio_length} length, but got " \
+                                                                  f"{audio_file_path} of length {padded_audio.shape[0]}"
 
-        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft,
-                                                 self.sr, self.f_max, self.normalize_spec)
-        return mel_spectrogram_db
+        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.sr,
+                                                 self.f_max, self.normalize_spec)
+        return mel_spectrogram_db, padded_audio
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
         """
