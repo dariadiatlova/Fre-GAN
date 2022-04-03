@@ -1,12 +1,10 @@
-import datetime
 from typing import Dict
-
-import pytorch_lightning as pl
-from commode_utils.callbacks import ModelCheckpointWithUploadCallback, PrintEpochResultCallback
-import wandb
 from omegaconf import OmegaConf
+
+from commode_utils.callbacks import ModelCheckpointWithUploadCallback
+
 from pytorch_lightning import seed_everything, Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from pytorch_lightning.callbacks import TQDMProgressBar
 from pytorch_lightning.loggers import WandbLogger
 
 from src.dataset import get_dataloaders
