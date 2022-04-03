@@ -1,5 +1,5 @@
 import torch
-from src.dataset.utils import get_mel_spectrogram
+from src.dataset import get_mel_spectrogram
 
 
 def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real, scale_d_outs_gen):
@@ -23,10 +23,10 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
     return rpd_loss, rsd_loss
 
 
-def _mel_spectrogram_loss(y_true, y_gen):
-    mel_true = get_mel_spectrogram(y_true, hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
-    mel_gen = get_mel_spectrogram(y_gen, hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
-    return torch.mean(abs(mel_true - mel_gen))
+def _mel_spectrogram_loss(y_true, y_gen, device: str):
+    mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
+    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
+    return torch.mean(abs(mel_true - mel_gen)).to(device)
 
 
 def _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen):
@@ -42,18 +42,23 @@ def _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_f
 
 
 def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
-                   period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen):
+                   period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen, device: str):
 
     # parameters from the paper
     lambda_mel = 45
     lambda_fm = 2
 
-    prd_adv_l = torch.mean(torch.square(period_d_outs_gen - torch.ones_like(period_d_outs_gen)))
-    srd_adv_l = torch.mean(torch.square(scale_d_outs_gen - torch.ones_like(scale_d_outs_gen)))
+    prd_adv_l = 0
+    srd_adv_l = 0
+
+    for prd, srd in zip(period_d_outs_gen, scale_d_outs_gen):
+        prd_adv_l += torch.mean(torch.square(prd - torch.ones_like(prd)))
+        srd_adv_l += torch.mean(torch.square(srd - torch.ones_like(srd)))
+
     rpd_fm_loss, rsd_fm_loss = _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen)
-    stft_loss = _mel_spectrogram_loss(y_true, y_gen)
+    stft_loss = _mel_spectrogram_loss(y_true, y_gen, device)
 
     total_generator_loss = (
             prd_adv_l + (lambda_mel * rpd_fm_loss) + srd_adv_l + (lambda_mel * rsd_fm_loss) + (lambda_fm * stft_loss)
     )
-    return total_generator_loss, prd_adv_l, srd_adv_l, rpd_fm_loss, rsd_fm_loss, stft_loss
+    return total_generator_loss, prd_adv_l + srd_adv_l, rpd_fm_loss + rsd_fm_loss, stft_loss

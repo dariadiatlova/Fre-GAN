@@ -72,7 +72,7 @@ def normalize_amplitudes(signal: np.ndarray) -> np.ndarray:
 
 
 def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int, n_fft: int,
-                        sample_rate: int, f_max: int, normalized: bool) -> torch.Tensor:
+                        sample_rate: int, f_max: int = 8000, normalized: bool = True) -> torch.Tensor:
     mel_spectrogram = transforms.MelSpectrogram(sample_rate=sample_rate, n_fft=n_fft, hop_length=hop_length,
                                                 n_mels=n_mels, f_max=f_max, normalized=normalized,
                                                 onesided=True)(input_audio)

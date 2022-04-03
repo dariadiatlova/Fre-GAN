@@ -11,7 +11,7 @@ class DiscreteWaveletTransform(nn.Module):
     The input audio signal is convolved by two filters: low-pass filter (g) and high-pass filter (h).
     """
 
-    def __init__(self, in_channels: int = 1, out_channels: int = 1, stride: int = 2,
+    def __init__(self, device: str, in_channels: int = 1, out_channels: int = 1, stride: int = 2,
                  pad_type='reflect', wave_name='haar'):
 
         super(DiscreteWaveletTransform, self).__init__()
@@ -20,6 +20,7 @@ class DiscreteWaveletTransform(nn.Module):
         self.stride = stride
         self.wave_name = wave_name
         self.pad_type = pad_type
+        self.device = device
 
         self.kernel_size = None
         self.filter_low = None
@@ -48,7 +49,7 @@ class DiscreteWaveletTransform(nn.Module):
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # x: [bs, 1, audio_length] -> ([bs, 1, audio_length // 2], [bs, 1, audio_length // 2])
-        x = F.pad(x, pad=self.pad_sizes, mode=self.pad_type)
-        g_filter = F.conv1d(x, self.filter_low, stride=self.stride)
-        h_filter = F.conv1d(x, self.filter_high, stride=self.stride)
+        x = F.pad(x, pad=self.pad_sizes, mode=self.pad_type).to(self.device)
+        g_filter = F.conv1d(x, self.filter_low.to(self.device), stride=self.stride).to(self.device)
+        h_filter = F.conv1d(x, self.filter_high.to(self.device), stride=self.stride).to(self.device)
         return g_filter, h_filter

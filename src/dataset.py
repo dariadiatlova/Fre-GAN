@@ -1,17 +1,11 @@
-import torch
-
-from typing import Dict, Optional, Tuple
 from collections import defaultdict
+from typing import Dict, Optional, Tuple
 
-from torch.utils.data import Dataset
+import torch
+from torch.utils.data import Dataset, DataLoader
 
 from data import DATA_PATH
-from src.dataset.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, \
-    get_mel_spectrogram
-
-# DEBUG
-from os import listdir
-from os.path import isfile, join
+from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram
 
 
 class MelDataset(Dataset):
@@ -20,7 +14,7 @@ class MelDataset(Dataset):
     It takes parameters from config.yaml and path to the folder with audios as a parameter.
     Please, look into config.yaml dataset section to find out about parameters in detail.
     """
-    _log_file = "bad_samples.log"
+    _log_file = "bad_samples.txt"
 
     def __init__(self, config: Dict, train: bool):
         for key, value in config.items():
@@ -32,10 +26,6 @@ class MelDataset(Dataset):
             tsv_filepath = self.val_filepath
 
         self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
-
-        # DEBUG
-        # main_path = f"{DATA_PATH}/audio/"
-        # self.audio_files = [main_path + f for f in listdir(main_path) if isfile(join(main_path, f))]
 
         self._mel_cached = defaultdict(lambda: None)
         self._n_samples = len(self.audio_files)
@@ -78,10 +68,25 @@ class MelDataset(Dataset):
         return mel_spec
 
     def __len__(self) -> int:
-        return self._n_samples
+        return 160 # self._n_samples
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
         if self._mel_cached[idx]:
             return self._mel_cached[idx]
         else:
             return self.__cache_mel(idx)
+
+
+def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
+    train_dataloader = DataLoader(MelDataset(dataset_config, train=True),
+                                  batch_size=dataset_config["batch_size"],
+                                  shuffle=True,
+                                  pin_memory=True,
+                                  num_workers=dataset_config["num_workers"])
+
+    test_dataloader = DataLoader(MelDataset(dataset_config, train=True),
+                                 batch_size=dataset_config["batch_size"],
+                                 shuffle=False,
+                                 pin_memory=True,
+                                 num_workers=dataset_config["num_workers"])
+    return train_dataloader, test_dataloader

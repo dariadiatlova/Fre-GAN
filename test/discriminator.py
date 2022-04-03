@@ -1,9 +1,9 @@
 import torch
 from omegaconf import OmegaConf
 
-from src.model.generator import RCG
-from src.model.period_discriminator import RPD
-from src.model.scale_discriminator import RSD
+from src.model.modules.generator import RCG
+from src.model.modules.period_discriminator import RPD
+from src.model.modules.scale_discriminator import RSD
 
 
 def test_discriminators():
@@ -17,9 +17,9 @@ def test_discriminators():
     period_discriminator = RPD()
     scale_discriminator = RSD()
     for _ in range(10):
-        dummy_audio = torch.rand(1, target_audio_length)
-        dummy_spectrogram = torch.rand(1, 80, 173)
-        generated_audio = generator(dummy_spectrogram).squeeze(1)
+        dummy_audio = torch.rand(1, target_audio_length).unsqueeze(1)
+        dummy_spectrogram = torch.rand(1, 80, 29)
+        generated_audio = generator(dummy_spectrogram)
         try:
             period_discriminator(dummy_audio, generated_audio)
             scale_discriminator(dummy_audio, generated_audio)

@@ -6,10 +6,10 @@ from src.model.dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
-    def __init__(self, period: int, negative_slope: float = 0.1):
+    def __init__(self, period: int, device: str, negative_slope: float):
         super(SubDiscriminator, self).__init__()
         self.period = period
-        self.DWT = DiscreteWaveletTransform()
+        self.DWT = DiscreteWaveletTransform(device)
 
         self.dwt_conv_layers = nn.ModuleList([
             nn.Conv1d(2, 1, kernel_size=(1,)),
@@ -70,7 +70,7 @@ class SubDiscriminator(nn.Module):
         return x
 
     def forward(self, x: torch.Tensor):
-        feature_map = []
+        feature_match = []
         cached_x_outs = []
         _batch_size, _channels, _time_length = x.shape
         x_out = x.clone()
@@ -94,14 +94,14 @@ class SubDiscriminator(nn.Module):
         for i, layer in enumerate(self.convolution_layers):
             x = layer(x)
             x = self.leaky_relu(x)
-            feature_map.append(x)
+            feature_match.append(x)
             if i < 3:
                 x = torch.cat([x, cached_x_outs[i]], dim=2)
 
         x = self.convolution_out_layer(x)
-        feature_map.append(x)
+        feature_match.append(x)
         x = torch.flatten(x, 1, -1)
-        return x, feature_map
+        return x, feature_match
 
 
 class RPD(nn.Module):
@@ -109,29 +109,29 @@ class RPD(nn.Module):
     Comprises five sub-discriminators each of which accepts specific periodic parts of input audio:
         | input_audio [T] -> (2d-convolution) –> output_audio [p, T/p], where p is a period: {2, 3, 5, 7, 11}.
     """
-    def __init__(self):
+    def __init__(self, device: str, negative_slope: float):
         super(RPD, self).__init__()
         self.discriminators = nn.ModuleList([
-            SubDiscriminator(2),
-            SubDiscriminator(3),
-            SubDiscriminator(5),
-            SubDiscriminator(7),
-            SubDiscriminator(11)
+            SubDiscriminator(2, device, negative_slope),
+            SubDiscriminator(3, device, negative_slope),
+            SubDiscriminator(5, device, negative_slope),
+            SubDiscriminator(7, device, negative_slope),
+            SubDiscriminator(11, device, negative_slope)
         ])
 
     def forward(self, y, y_hat):
         y_disc_real = []
         y_disc_generated = []
-        real_feature_maps = []
-        generated_feature_maps = []
+        real_feature_match = []
+        generated_feature_matches = [] 
 
         for discriminator in self.discriminators:
             y_real, real_feature_map = discriminator(y)
             y_gen, generated_feature_map = discriminator(y_hat)
 
             y_disc_real.append(y_real)
-            real_feature_maps.append(real_feature_map)
+            real_feature_match.append(real_feature_map)
             y_disc_generated.append(y_gen)
-            generated_feature_maps.append(generated_feature_map)
+            generated_feature_matches.append(generated_feature_map)
 
-        return y_disc_real, y_disc_generated, real_feature_maps, generated_feature_maps
+        return y_disc_real, y_disc_generated, real_feature_match, generated_feature_matches

@@ -5,9 +5,9 @@ from src.model.dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
-    def __init__(self, negative_slope: float = 0.1):
+    def __init__(self, device: str, negative_slope: float):
         super(SubDiscriminator, self).__init__()
-        self.DWT = DiscreteWaveletTransform()
+        self.DWT = DiscreteWaveletTransform(device)
 
         self.dwt_conv_layers = nn.ModuleList([
             nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7),
@@ -44,7 +44,7 @@ class SubDiscriminator(nn.Module):
         return x
 
     def forward(self, x: torch.Tensor):
-        feature_map = []
+        feature_match = []
         cached_x_outs = []
         _batch_size, _channels, _time_length = x.shape
         x_out = x.clone()
@@ -57,14 +57,14 @@ class SubDiscriminator(nn.Module):
         for i, conv_layer in enumerate(self.convolution_layers):
             x = conv_layer(x)
             x = self.leaky_relu(x)
-            feature_map.append(x)
+            feature_match.append(x)
             if i < 2:
                 x = torch.cat([x, cached_x_outs[i]], dim=2)
 
         x = self.convolution_out_layer(x)
-        feature_map.append(x)
+        feature_match.append(x)
         x = torch.flatten(x, 1, -1)
-        return x, feature_map
+        return x, feature_match
 
 
 class RSD(nn.Module):
@@ -72,14 +72,18 @@ class RSD(nn.Module):
     Consists of three sub-discriminators operating on different input scales: raw audio, 2 × down-sampled audio,
     and 4 × down-sampled audio.
     """
-    def __init__(self):
+    def __init__(self, device, negative_slope):
         super(RSD, self).__init__()
-        self.DWT = DiscreteWaveletTransform()
+        self.DWT = DiscreteWaveletTransform(device)
         self.dwt_conv_layers = nn.ModuleList([
             nn.Conv1d(2, 1, kernel_size=(1,), stride=(1,), padding=0),
             nn.Conv1d(4, 1, kernel_size=(1,), stride=(1,), padding=0),
             ])
-        self.discriminators = nn.ModuleList([SubDiscriminator(), SubDiscriminator(), SubDiscriminator()])
+        self.discriminators = nn.ModuleList([
+            SubDiscriminator(device, negative_slope),
+            SubDiscriminator(device, negative_slope),
+            SubDiscriminator(device, negative_slope)
+        ])
         self.dwt_cache = {}
 
     def __get_dwt(self, x, i, cache_name):
@@ -98,8 +102,8 @@ class RSD(nn.Module):
     def forward(self, y: torch.Tensor, y_hat: torch.Tensor):
         y_disc_real = []
         y_disc_generated = []
-        real_feature_maps = []
-        generated_feature_maps = []
+        real_feature_matches = []
+        generated_feature_matches = []
 
         out = y.clone()
         out_hat = y_hat.clone()
@@ -122,8 +126,8 @@ class RSD(nn.Module):
             y_gen, generated_feature_map = discriminator(y_hat)
 
             y_disc_real.append(y_real)
-            real_feature_maps.append(real_feature_map)
+            real_feature_matches.append(real_feature_map)
             y_disc_generated.append(y_gen)
-            generated_feature_maps.append(generated_feature_map)
+            generated_feature_matches.append(generated_feature_map)
 
-        return y_disc_real, y_disc_generated, real_feature_maps, generated_feature_maps
+        return y_disc_real, y_disc_generated, real_feature_matches, generated_feature_matches

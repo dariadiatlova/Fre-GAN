@@ -2,7 +2,7 @@ import random
 
 from omegaconf import OmegaConf
 
-from src.dataset.dataset import MelDataset
+from src.dataset import MelDataset
 
 
 def test_mel_dataset_shapes():
@@ -14,6 +14,6 @@ def test_mel_dataset_shapes():
     dataset_config = config["dataset"]
     dataset = MelDataset(dataset_config, train=True)
     for _ in range(100):
-        assert dataset[random.randint(0, len(dataset))][0].shape == (80, 173), f"Mel-spec shapes mismatch :("
+        assert dataset[random.randint(0, len(dataset))][0].shape == (80, 29), f"Mel-spec shapes mismatch :("
         assert dataset[random.randint(0, len(dataset))][1].shape == dataset_config["target_audio_length"], \
             f"Padded audio shape doesn't match target_audio_length in config :("
