@@ -8,6 +8,7 @@ import torch
 from typing import Optional
 
 from torchaudio import transforms
+import soundfile as sf
 
 
 def get_file_names(tsv_filepath: str, root_path: str):

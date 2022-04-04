@@ -2,7 +2,7 @@ dataset:
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
-  batch_size: 16
+  batch_size: 1
   normalize_spec: true
   f_max: 8000
   train: False
@@ -22,20 +22,21 @@ rcg:
   channels: [256, 128, 64, 32, 16]
   kernel_sizes: [3, 7, 11]
 
-fre_gan:
+fre-gan:
   seed: 7
-  epochs: 10
-  n_gpus: 2
+  epochs: 1
+  n_gpus: 0
   warm_up_steps: 50
   val_every_epoch: 1
   save_every_epoch: 1
   optimizer: "Adam"
-  lr: 0.1
+  lr: 0.0002
   b1: 0.8
   b2: 0.999
 
 wandb:
+  checkpoint_directory: "wandb/run-20220404_233955-2ok8m516/files/epoch=0-step=1.ckpt"
   project: "Fre-GAN"
-  offline: true
+  offline: false
   progress_bar_refresh_rate: 1
   log_every_n_steps: 10

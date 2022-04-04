@@ -1,4 +1,5 @@
 from typing import Dict
+from itertools import chain
 
 import numpy as np
 import torch
@@ -27,55 +28,39 @@ class FreGan(LightningModule):
         self.generator_loss_function = generator_loss
         self.discriminator_loss_function = discriminator_loss
 
-    def _shared_step(self, batch, optimizer_idx, step: str) -> Dict:
-        mel_spectrogram, y_true = batch
+    def _generator_shared_step(self, y_gen, y_true, step):
+        y_rpd_real, y_rpd_gen, real_fm_rpd, gen_fm_rpd = self.rp_discriminator(y_true.unsqueeze(1), y_gen)
+        y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
-        # train / val generator
-        if optimizer_idx == 0:
-            y_gen = self.generator(mel_spectrogram)
+        total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.device
+        )
 
-            y_rpd_real, y_rpd_gen, real_fm_rpd, gen_fm_rpd = self.rpd(y_true.unsqueeze(1), y_gen)
-            y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.rsd(y_true.unsqueeze(1), y_gen)
+        gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
+                        f"{step}/generator_adversarial_loss": adv_loss,
+                        f"{step}/feature_matching_loss": fm_loss,
+                        f"{step}/stft_loss": stft_loss}
 
-            total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-                y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.device
-            )
+        self.log_dict(gen_log_dict, on_step=True, on_epoch=False)
+        return total_gen_loss
 
-            gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
-                            f"{step}/generator_adversarial_loss": adv_loss,
-                            f"{step}/feature_matching_loss": fm_loss,
-                            f"{step}/stft_loss": stft_loss}
+    def _discriminator_shared_step(self, y_gen, y_true, step):
+        y_rpd_real, y_rpd_gen, real_fm_rpd, gen_fm_rpd = self.rp_discriminator(y_true.unsqueeze(1), y_gen.detach())
+        y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen.detach())
 
-            if step == "val":
-                with torch.no_grad():
-                    rmse, mcds = self._compute_metrics(batch)
-                    gen_log_dict["rmse"] = rmse
-                    gen_log_dict["RMSE_f0"] = rmse
-                    gen_log_dict["MCD"] = mcds
+        rpd_loss, rsd_loss = self.discriminator_loss_function(y_rpd_real, y_rpd_gen, y_rsd_real, y_rsd_gen)
+        total_discriminator_loss = rpd_loss + rsd_loss
+        disc_log_dict = {f"{step}/discriminator_total_loss": total_discriminator_loss,
+                         f"{step}/period_discriminator_loss": rpd_loss,
+                         f"{step}/scale_discriminator_loss": rsd_loss}
 
-            self.log_dict(gen_log_dict, on_step=True, on_epoch=False)
-            return total_gen_loss
+        self.log_dict(disc_log_dict, on_step=True, on_epoch=False)
 
-        # train / val discriminators
-        if optimizer_idx == 1:
-            y_gen = self.generator(mel_spectrogram)
-
-            y_rpd_real, y_rpd_gen, real_fm_rpd, gen_fm_rpd = self.rpd(y_true.unsqueeze(1), y_gen.detach())
-            y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.rsd(y_true.unsqueeze(1), y_gen.detach())
-
-            rpd_loss, rsd_loss = self.discriminator_loss_function(y_rpd_real, y_rpd_gen, y_rsd_real, y_rsd_gen)
-            total_discriminator_loss = rpd_loss + rsd_loss
-            disc_log_dict = {f"{step}/discriminator_total_loss": total_discriminator_loss,
-                             f"{step}/period_discriminator_loss": rpd_loss,
-                             f"{step}/scale_discriminator_loss": rsd_loss}
-
-            self.log_dict(disc_log_dict, on_step=True, on_epoch=False)
-
-            return total_discriminator_loss
+        return total_discriminator_loss
 
     def _compute_metrics(self, batch):
         mel_spectrogram, y_true = batch
-        ys_gen = self.generator(y_true).squeese(1).deatch().cpu().numpy()
+        ys_gen = self.generator(mel_spectrogram).squeeze(1).detach().cpu().numpy()
         ys_true = y_true.detach().cpu().numpy()
 
         rmses = []
@@ -91,10 +76,12 @@ class FreGan(LightningModule):
     def configure_optimizers(self):
         if self.optimizer == "Adam":
             opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
-            opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+            opt_d = torch.optim.Adam(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
+                                     lr=self.lr, betas=(self.b1, self.b2))
         else:
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
-            opt_d = torch.optim.AdamW(self.discriminator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
+            opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
+                                      lr=self.lr, betas=(self.b1, self.b2))
         return [opt_g, opt_d], []
 
     def forward(self, mel_spectrogram):
@@ -103,15 +90,40 @@ class FreGan(LightningModule):
 
     def training_step(self, batch, batch_idx, optimizer_idx):
 
-        self.generator.tran()
+        self.generator.train()
         self.rp_discriminator.train()
         self.sp_discriminator.train()
 
-        return self._shared_step(batch, optimizer_idx, "train")
+        mel_spectrogram, y_true = batch
 
-    def validation_step(self, batch, batch_idx, optimizer_idx):
+        if optimizer_idx == 0:
+            y_gen = self.generator(mel_spectrogram)
+            return self._generator_shared_step(y_gen, y_true, "train")
+
+        # train / val discriminators
+        if optimizer_idx == 1:
+            y_gen = self.generator(mel_spectrogram)
+            return self._discriminator_shared_step(y_gen, y_true, "train")
+
+    def validation_step(self, batch, batch_idx):
         self.generator.eval()
         self.rp_discriminator.eval()
         self.sp_discriminator.eval()
-        loss = self._shared_step(batch, batch_idx, "val")
-        return loss
+
+        log_dict = {}
+        with torch.no_grad():
+            rmse, mcds = self._compute_metrics(batch)
+            log_dict["val/RMSE_f0"] = rmse
+            log_dict["val/MCD"] = mcds
+
+            self.log_dict(log_dict, on_step=True, on_epoch=False)
+
+            # log val generator loss
+            mel_spectrogram, y_true = batch
+            y_gen = self.generator(mel_spectrogram)
+            self._generator_shared_step(y_gen, y_true, "val")
+
+            # log val discriminator loss
+            mel_spectrogram, y_true = batch
+            y_gen = self.generator(mel_spectrogram)
+            self._discriminator_shared_step(y_gen, y_true, "val")

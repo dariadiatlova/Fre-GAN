@@ -22,12 +22,17 @@ class MelDataset(Dataset):
 
         if train:
             tsv_filepath = self.train_filepath
+            self.audio_files = [f"{DATA_PATH}/audio/common_voice_ru_18849003.wav",
+                                f"{DATA_PATH}/audio/common_voice_ru_18849004.wav"]
         else:
             tsv_filepath = self.val_filepath
 
-        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
+        # self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
 
-        self._mel_cached = defaultdict(lambda: None)
+            self.audio_files = [f"{DATA_PATH}/audio/common_voice_ru_18849005.wav",
+                                f"{DATA_PATH}/audio/common_voice_ru_18849006.wav"]
+
+        self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)
 
     def __compute_mel_spectrogram(self, audio_file_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -68,13 +73,14 @@ class MelDataset(Dataset):
         return mel_spec
 
     def __len__(self) -> int:
-        return 160 # self._n_samples
+        return self._n_samples
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
-        if self._mel_cached[idx]:
-            return self._mel_cached[idx]
-        else:
+        item = self._mel_cached.get(idx, "empty")
+        if item == "empty":
             return self.__cache_mel(idx)
+        else:
+            return item
 
 
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
@@ -84,7 +90,7 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
                                   pin_memory=True,
                                   num_workers=dataset_config["num_workers"])
 
-    test_dataloader = DataLoader(MelDataset(dataset_config, train=True),
+    test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
                                  batch_size=dataset_config["batch_size"],
                                  shuffle=False,
                                  pin_memory=True,
