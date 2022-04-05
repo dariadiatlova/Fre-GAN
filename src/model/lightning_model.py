@@ -21,6 +21,7 @@ class FreGan(LightningModule):
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
+        self.device = fre_gan_config["device"]
         self.generator = RCG(config["rcg"])
         self.rp_discriminator = RPD(self.device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.device, config["rcg"]["negative_slope"])
