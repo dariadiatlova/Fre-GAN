@@ -40,6 +40,6 @@ wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
   project: "Cluster-Fre-GAN"
-  offline: false
+  offline: true
   progress_bar_refresh_rate: 1
   log_every_n_steps: 10
