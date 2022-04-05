@@ -15,12 +15,14 @@ def mel_cepstral_distance(audio1: np.ndarray, audio2: np.ndarray, sr: int = 4410
 
     k = 10 / np.log(10) * np.sqrt(2)
 
-    mel1 = melspectrogram(
-        y=audio1 / np.max(abs(audio1)), sr=sr, n_fft=n_fft, hop_length=hop_len, win_length=win_len, power=2
-    )
-    mel2 = melspectrogram(
-        y=audio2 / np.max(abs(audio2)), sr=sr, n_fft=n_fft, hop_length=hop_len, win_length=win_len, power=2
-    )
+    if np.max(abs(audio1)) > 1:
+        audio1 /= np.max(abs(audio1))
+
+    if np.max(abs(audio2)) > 1:
+        audio2 /= np.max(abs(audio2))
+
+    mel1 = melspectrogram(y=audio1, sr=sr, n_fft=n_fft, hop_length=hop_len, win_length=win_len, power=2)
+    mel2 = melspectrogram(y=audio2, sr=sr, n_fft=n_fft, hop_length=hop_len, win_length=win_len, power=2)
 
     # the zeroth mfcc coefficient is omitted in the paper, and dct type 2 librosa uses while computing
     # mfcc is 2 times bigger than the one is used in the paper, so:
