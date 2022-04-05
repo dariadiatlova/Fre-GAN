@@ -12,7 +12,7 @@ torch~=1.8.1
 torchaudio~=0.8.1
 pytorch-lightning~=1.5.10
 tqdm~=4.63.0
-wndb~=0.12.11
+wandb~=0.12.11
 
 numpy~=1.21.5
 pandas~=1.4.1

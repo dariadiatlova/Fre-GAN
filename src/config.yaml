@@ -25,7 +25,7 @@ rcg:
 fre-gan:
   seed: 7
   epochs: 1
-  n_gpus: 0
+  n_gpus: 1
   warm_up_steps: 50
   val_every_epoch: 1
   save_every_epoch: 1
