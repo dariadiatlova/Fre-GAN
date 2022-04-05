@@ -37,7 +37,7 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   save_dir: "/content/drive/MyDrive/data"
-  checkpoint_directory: "wandb/run-20220404_233955-2ok8m516/files/epoch=0-step=1.ckpt"
+  checkpoint_directory: null
   project: "Fre-GAN"
   offline: false
   progress_bar_refresh_rate: 1
