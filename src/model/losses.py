@@ -24,8 +24,8 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
 
 
 def _mel_spectrogram_loss(y_true, y_gen, device: str):
-    mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
-    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=44100)
+    mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
+    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
     return torch.mean(abs(mel_true - mel_gen)).to(device)
 
 
@@ -58,7 +58,5 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
     rpd_fm_loss, rsd_fm_loss = _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen)
     stft_loss = _mel_spectrogram_loss(y_true, y_gen, device)
 
-    total_generator_loss = (
-            prd_adv_l + (lambda_mel * rpd_fm_loss) + srd_adv_l + (lambda_mel * rsd_fm_loss) + (lambda_fm * stft_loss)
-    )
+    total_generator_loss = prd_adv_l + srd_adv_l + (lambda_fm * (rpd_fm_loss + rsd_fm_loss)) + (lambda_mel * stft_loss)
     return total_generator_loss, prd_adv_l + srd_adv_l, rpd_fm_loss + rsd_fm_loss, stft_loss
