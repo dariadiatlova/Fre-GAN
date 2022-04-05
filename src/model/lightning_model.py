@@ -21,10 +21,10 @@ class FreGan(LightningModule):
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
-        self.device = fre_gan_config["device"]
+
         self.generator = RCG(config["rcg"])
-        self.rp_discriminator = RPD(self.device, config["rcg"]["negative_slope"])
-        self.sp_discriminator = RSD(self.device, config["rcg"]["negative_slope"])
+        self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
+        self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
 
         self.generator_loss_function = generator_loss
         self.discriminator_loss_function = discriminator_loss
@@ -34,7 +34,7 @@ class FreGan(LightningModule):
         y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
         total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.device
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.current_device
         )
 
         gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
