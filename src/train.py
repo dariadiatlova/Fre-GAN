@@ -16,7 +16,7 @@ def main(config: Dict):
     seed_everything(train_config["seed"])
 
     wandb_logger = WandbLogger(
-        save_dir=wandb_config["save_dir"],
+        save_dir="/content/drive/MyDrive/",
         project=wandb_config["project"],
         log_model=False,
         offline=wandb_config["offline"],

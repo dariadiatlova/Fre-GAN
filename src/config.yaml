@@ -36,7 +36,6 @@ fre-gan:
 
 wandb:
   progress_bar_refresh_rate: 1
-  save_dir: "/content/drive/MyDrive/data"
   checkpoint_directory: null
   project: "Fre-GAN"
   offline: false
