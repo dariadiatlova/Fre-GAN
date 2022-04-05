@@ -6,8 +6,8 @@ cd data
 wget -O ru.tar "$1"
 tar -xvsf ru.tar
 
-mv ru/train.tsv .
-mv ru/test.tsv .
+mv clips/train.tsv .
+mv clips/test.tsv .
 
 # 5 GB (193 h)
 #wget https://mozilla-common-voice-datasets.s3.dualstack.us-west-2.amazonaws.com/cv-corpus-8.0-2022-01-19/cv-corpus-8.0-2022-01-19-ru.tar.gz
