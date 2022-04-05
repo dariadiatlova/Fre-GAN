@@ -58,7 +58,5 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
     rpd_fm_loss, rsd_fm_loss = _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen)
     stft_loss = _mel_spectrogram_loss(y_true, y_gen, device)
 
-    total_generator_loss = (
-            prd_adv_l + (lambda_mel * rpd_fm_loss) + srd_adv_l + (lambda_mel * rsd_fm_loss) + (lambda_fm * stft_loss)
-    )
+    total_generator_loss = prd_adv_l + srd_adv_l + (lambda_fm * (rpd_fm_loss + rsd_fm_loss)) + (lambda_mel * stft_loss)
     return total_generator_loss, prd_adv_l + srd_adv_l, rpd_fm_loss + rsd_fm_loss, stft_loss
