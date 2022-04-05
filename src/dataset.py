@@ -22,15 +22,10 @@ class MelDataset(Dataset):
 
         if train:
             tsv_filepath = self.train_filepath
-            self.audio_files = [f"{DATA_PATH}/audio/common_voice_ru_18849003.wav",
-                                f"{DATA_PATH}/audio/common_voice_ru_18849004.wav"]
         else:
             tsv_filepath = self.val_filepath
 
-        # self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
-
-            self.audio_files = [f"{DATA_PATH}/audio/common_voice_ru_18849005.wav",
-                                f"{DATA_PATH}/audio/common_voice_ru_18849006.wav"]
+        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
 
         self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)

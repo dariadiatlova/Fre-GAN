@@ -16,6 +16,7 @@ def main(config: Dict):
     seed_everything(train_config["seed"])
 
     wandb_logger = WandbLogger(
+        save_dir=wandb_config["save_dir"],
         project=wandb_config["project"],
         log_model=False,
         offline=wandb_config["offline"],
@@ -28,13 +29,15 @@ def main(config: Dict):
                                 save_top_k=-1,
                                 every_n_epochs=1)
 
+    progress_bar = TQDMProgressBar(refresh_rate=wandb_config["progress_bar_refresh_rate"])
+
     trainer = Trainer(
         max_epochs=train_config["epochs"],
         check_val_every_n_epoch=train_config["val_every_epoch"],
         log_every_n_steps=wandb_config["log_every_n_steps"],
         logger=wandb_logger,
         gpus=train_config["n_gpus"],
-        callbacks=[callbacks]
+        callbacks=[callbacks, progress_bar]
     )
 
     train_loader, val_loader = get_dataloaders(config["dataset"])

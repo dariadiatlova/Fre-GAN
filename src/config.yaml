@@ -8,7 +8,7 @@ dataset:
   train: False
   n_channels: 1
   target_audio_length: 7248
-  sr: 44100
+  sr: 48000
   n_fft: 1024
   n_mels: 80
   hop_size: 256
@@ -35,6 +35,8 @@ fre-gan:
   b2: 0.999
 
 wandb:
+  progress_bar_refresh_rate: 1
+  save_dir: "/content/drive/MyDrive/data"
   checkpoint_directory: "wandb/run-20220404_233955-2ok8m516/files/epoch=0-step=1.ckpt"
   project: "Fre-GAN"
   offline: false
