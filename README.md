@@ -17,7 +17,7 @@ After running [`download.sh`](download.sh) script folders should be placed as fo
 
       Fre-GAN
           |- data
-              | __init__.py
               |- audio
+              | __init__.py
               | train.tsv
               | test.tsv
