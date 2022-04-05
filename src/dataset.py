@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
+import librosa
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -37,6 +38,7 @@ class MelDataset(Dataset):
         :return: 2 tensors: mel-spectrogram and original audio padded/truncated to the target_audio_length.
         """
         audio = load_audio(audio_file_path, self.sr, self._log_file)
+        resampled_audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
 
         # check that input channel matches config
         assert len(audio.shape) == self.n_channels, f"Audio file {audio_file_path} have different number of channels!" \
@@ -52,7 +54,7 @@ class MelDataset(Dataset):
                                                                   f"{self.target_audio_length} length, but got " \
                                                                   f"{audio_file_path} of length {padded_audio.shape[0]}"
 
-        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.sr,
+        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.target_sr,
                                                  self.f_max, self.normalize_spec)
         return mel_spectrogram_db, padded_audio
 

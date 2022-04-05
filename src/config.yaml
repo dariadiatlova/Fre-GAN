@@ -2,13 +2,13 @@ dataset:
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
-  batch_size: 1
+  batch_size: 16
   normalize_spec: true
   f_max: 8000
-  train: False
   n_channels: 1
   target_audio_length: 7248
   sr: 48000
+  target_sr: 22050
   n_fft: 1024
   n_mels: 80
   hop_size: 256

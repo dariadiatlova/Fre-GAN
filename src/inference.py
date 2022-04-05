@@ -46,7 +46,7 @@ def configure_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-sr', '--sample_rate',
                         help='Sample rate of the input audio file. Default is 4100.',
                         type=str,
-                        default=44100)
+                        default=22050)
     parser.add_argument('-s', '--segment_size',
                         help='Size of the output audio file (sr * seconds). Default is 44100 * 3 = 132300',
                         type=int,
