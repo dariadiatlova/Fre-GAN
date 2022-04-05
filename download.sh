@@ -18,7 +18,7 @@ mkdir -p audio
 
 # write to an array all paths to mp3 files
 #FILES=$(find cv-corpus-8.0-2022-01-19/ru/clips -type f -name "*.mp3")
-FILES=$(find ru/clips -type f -name "*.mp3")
+FILES=$(find clips -type f -name "*.mp3")
 
 # multiprocess implementation of file conversion
 mp3_to_wav() {
