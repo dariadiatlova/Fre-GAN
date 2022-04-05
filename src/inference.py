@@ -1,4 +1,6 @@
 import argparse
+
+import librosa
 import soundfile as sf
 
 from typing import Dict
@@ -12,6 +14,8 @@ from src.utils import load_audio, pad_input_audio_signal, get_mel_spectrogram
 
 def feature_extraction(params: Dict):
     audio_data = load_audio(params.audio_file_path, params.sample_rate)
+    if params.sample_rate != 22050:
+        audio_data = librosa.resample(audio_data, params.sample_rate, 22050)
     padded_signal = pad_input_audio_signal(audio_data, params.segment_size)
     mel_spectrogram = get_mel_spectrogram(padded_signal, hop_length=256, n_mels=80, n_fft=1024,
                                           sample_rate=params.sample_rate)
@@ -44,13 +48,13 @@ def configure_arguments(parser: argparse.ArgumentParser) -> None:
                         type=str,
                         default=Path(f"{DATA_PATH}/generated_samples/generated.wav"))
     parser.add_argument('-sr', '--sample_rate',
-                        help='Sample rate of the input audio file. Default is 4100.',
+                        help='Sample rate of the input audio file. Default is 22050.',
                         type=str,
                         default=22050)
     parser.add_argument('-s', '--segment_size',
-                        help='Size of the output audio file (sr * seconds). Default is 44100 * 3 = 132300',
+                        help='Size of the output audio file (sr * seconds). Default is 22050 * 3 = 66150',
                         type=int,
-                        default=132300)
+                        default=66150)
 
 
 if __name__ == "__main__":

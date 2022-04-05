@@ -2,7 +2,7 @@ dataset:
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
-  batch_size: 1
+  batch_size: 16
   normalize_spec: true
   f_max: 8000
   train: False
@@ -39,7 +39,7 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Fre-GAN"
+  project: "Cluster-Fre-GAN"
   offline: false
   progress_bar_refresh_rate: 1
   log_every_n_steps: 10

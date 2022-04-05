@@ -1,5 +1,3 @@
-import yaml
-
 from typing import Dict
 
 from omegaconf import OmegaConf
@@ -51,11 +49,7 @@ def main(config: Dict):
 
 
 if __name__ == "__main__":
-    # config = OmegaConf.load("src/config.yaml")
-    # config = OmegaConf.to_container(config, resolve=True)
-
-    # for colab
-    with open("src/config.yaml", 'r') as stream:
-        config = yaml.safe_load(stream)
+    config = OmegaConf.load("src/config.yaml")
+    config = OmegaConf.to_container(config, resolve=True)
 
     main(config)
