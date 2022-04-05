@@ -70,7 +70,7 @@ class MelDataset(Dataset):
         return mel_spec
 
     def __len__(self) -> int:
-        return self._n_samples
+        return 100 # self._n_samples
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
         item = self._mel_cached.get(idx, "empty")
@@ -83,7 +83,7 @@ class MelDataset(Dataset):
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
     train_dataloader = DataLoader(MelDataset(dataset_config, train=True),
                                   batch_size=dataset_config["batch_size"],
-                                  shuffle=True,
+                                  shuffle=False,
                                   pin_memory=True,
                                   num_workers=dataset_config["num_workers"])
 
