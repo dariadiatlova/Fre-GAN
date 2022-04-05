@@ -2,7 +2,6 @@ import yaml
 
 from typing import Dict
 
-from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
@@ -51,10 +50,6 @@ def main(config: Dict):
 
 
 if __name__ == "__main__":
-    # config = OmegaConf.load("src/config.yaml")
-    # config = OmegaConf.to_container(config, resolve=True)
-
-    # for colab
     with open("src/config.yaml", 'r') as stream:
         config = yaml.safe_load(stream)
 
