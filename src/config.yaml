@@ -9,6 +9,7 @@ dataset:
   n_channels: 1
   target_audio_length: 7248
   sr: 48000
+  target_sr: 22050
   n_fft: 1024
   n_mels: 80
   hop_size: 256
