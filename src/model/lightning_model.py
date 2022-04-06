@@ -13,7 +13,7 @@ from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict, inference: bool = False):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
@@ -21,8 +21,9 @@ class FreGan(LightningModule):
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
-
         self.generator = RCG(config["rcg"])
+        if self.inference:
+            self.generator.remove_weight_norm()
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
 

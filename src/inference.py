@@ -16,20 +16,23 @@ def feature_extraction(params: Dict):
     audio_data = load_audio(params.audio_file_path, params.sample_rate)
     if params.sample_rate != 22050:
         audio_data = librosa.resample(audio_data, params.sample_rate, 22050)
-    padded_signal = pad_input_audio_signal(audio_data, params.segment_size)
+    if params.segment_size is not None:
+        padded_signal = pad_input_audio_signal(audio_data, params.segment_size)
     mel_spectrogram = get_mel_spectrogram(padded_signal, hop_length=256, n_mels=80, n_fft=1024,
                                           sample_rate=params.sample_rate)
-    return mel_spectrogram
+    return mel_spectrogram, len(audio_data)
 
 
 def generate_audio(params: Dict, train_config: Dict) -> None:
     config = OmegaConf.load(train_config)
     config = OmegaConf.to_container(config, resolve=True)
     model_weights = params.model_weights_path
-    model = FreGan.load_from_checkpoint(checkpoint_path=model_weights, config=config)
+    model = FreGan.load_from_checkpoint(checkpoint_path=model_weights, config=config, inference=True)
     model.eval()
-    mel_spectrogram = feature_extraction(params)
+    mel_spectrogram, audio_size = feature_extraction(params)
     generated_audio = model(mel_spectrogram.unsqueeze(0)).squeeze(0).squeeze(0).detach().cpu().numpy()
+    if len(generated_audio) != audio_size:
+        pad_input_audio_signal(generated_audio, audio_size)
     if max(abs(generated_audio)) > 1:
         generated_audio /= max(abs(generated_audio))
     sf.write(params.output_wav_path, generated_audio, params.sample_rate)
@@ -52,9 +55,9 @@ def configure_arguments(parser: argparse.ArgumentParser) -> None:
                         type=str,
                         default=22050)
     parser.add_argument('-s', '--segment_size',
-                        help='Size of the output audio file (sr * seconds). Default is 22050 * 3 = 66150',
+                        help='Size of the output audio file (sr * seconds). Default is original audio size',
                         type=int,
-                        default=66150)
+                        default=None)
 
 
 if __name__ == "__main__":

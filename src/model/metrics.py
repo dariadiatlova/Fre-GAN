@@ -4,8 +4,10 @@ import numpy as np
 
 from librosa.feature import melspectrogram, mfcc
 
+from src.utils import load_audio
 
-def mel_cepstral_distance(audio1: np.ndarray, audio2: np.ndarray, sr: int = 44100, n_mfcc: int = 16,
+
+def mel_cepstral_distance(audio1: np.ndarray, audio2: np.ndarray, sr: int = 22050, n_mfcc: int = 20,
                           n_fft: int = 1024, hop_len: int = 256, win_len: int = 1024) -> float:
     """
     Implementation of  "Mel-Cepstral Distance Measure for Objective Speech Quality Assessment" by R. Kubichek:
@@ -33,7 +35,7 @@ def mel_cepstral_distance(audio1: np.ndarray, audio2: np.ndarray, sr: int = 4410
     return mcd
 
 
-def rmse_f0(audio1: np.ndarray, audio2: np.ndarray, sr: int = 44100, fmin: int = 0, fmax: int = 8000):
+def rmse_f0(audio1: np.ndarray, audio2: np.ndarray, sr: int = 22050, fmin: int = 0, fmax: int = 8000):
     pitches1 = librosa.core.piptrack(y=audio1, sr=sr, fmin=fmin, fmax=fmax)[0]
     pitches2 = librosa.core.piptrack(y=audio2, sr=sr, fmin=fmin, fmax=fmax)[0]
     return np.sqrt(np.mean((pitches1 - pitches2) ** 2))
