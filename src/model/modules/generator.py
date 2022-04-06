@@ -61,8 +61,8 @@ class RCG(nn.Module):
         self.leaky_relu = nn.LeakyReLU(negative_slope=self.negative_slope)
 
         self.conv_transposed_block = nn.ModuleList([
-            weight_norm(nn.ConvTranspose1d(512, 256, kernel_size=(12,), stride=(8,), padding=(4,))),
-            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(4,), stride=(4,), padding=(3,))),
+            weight_norm(nn.ConvTranspose1d(512, 256, kernel_size=(16,), stride=(8,), padding=(4,))),
+            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(3,))),
             weight_norm(nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(32, 16, kernel_size=(4,), stride=(2,), padding=(1,)))
@@ -78,8 +78,8 @@ class RCG(nn.Module):
         ])
 
         self.condition_up_sampling = nn.ModuleList([
-            weight_norm(nn.ConvTranspose1d(80, 256, kernel_size=(12,), stride=(8,), padding=(4,))),
-            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(4,), stride=(4,), padding=(3,))),
+            weight_norm(nn.ConvTranspose1d(80, 256, kernel_size=(16,), stride=(8,), padding=(4,))),
+            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(3,))),
             weight_norm(nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
         ])
