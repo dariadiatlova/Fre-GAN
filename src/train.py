@@ -26,7 +26,7 @@ def main(config: Dict):
     callbacks = ModelCheckpoint(dirpath=wandb_logger.experiment.dir,
                                 monitor="train/generator_total_loss",
                                 save_top_k=3,
-                                every_n_epochs=100)
+                                every_n_epochs=25)
 
     progress_bar = TQDMProgressBar(refresh_rate=wandb_config["progress_bar_refresh_rate"])
 
