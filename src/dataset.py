@@ -70,7 +70,9 @@ class MelDataset(Dataset):
         return mel_spec
 
     def __len__(self) -> int:
-        return 100 # self._n_samples
+        if self.dataset_size:
+            return self.dataset_size
+        return self._n_samples
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
         item = self._mel_cached.get(idx, "empty")

@@ -83,7 +83,10 @@ class FreGan(LightningModule):
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
                                       lr=self.lr, betas=(self.b1, self.b2))
-        return [opt_g, opt_d], []
+
+        scheduler_g = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.lr_decay)
+        scheduler_d = torch.optim.lr_scheduler.ExponentialLR(opt_d, gamma=self.lr_decay)
+        return [opt_g, opt_d], [scheduler_g, scheduler_d]
 
     def forward(self, mel_spectrogram):
         y_gen = self.generator(mel_spectrogram)

@@ -1,4 +1,5 @@
 dataset:
+  dataset_size: 200
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
@@ -24,20 +25,20 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 10
+  epochs: 100
   n_gpus: 1
-  val_every_epoch: 1
-  save_every_epoch: 1
+  val_every_epoch: 50
+  save_every_epoch: 20
   optimizer: "AdamW"
   current_device: "cuda"
   lr: 0.0002
   b1: 0.8
   b2: 0.999
+  lr_decay: 0.999
 
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
   project: "Colab-Minor-Fre-GAN"
   offline: false
-  progress_bar_refresh_rate: 1
   log_every_n_steps: 10
