@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from torch.nn.utils import weight_norm
+
 from src.model.dwt import DiscreteWaveletTransform
 
 
@@ -10,21 +12,21 @@ class SubDiscriminator(nn.Module):
         self.DWT = DiscreteWaveletTransform(device)
 
         self.dwt_conv_layers = nn.ModuleList([
-            nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7),
-            nn.Conv1d(4, 128, kernel_size=(41,), stride=(2,), padding=20),
+            weight_norm(nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7)),
+            weight_norm(nn.Conv1d(4, 128, kernel_size=(41,), stride=(2,), padding=20)),
             ])
 
         self.convolution_layers = nn.ModuleList([
-            nn.Conv1d(1, 128, kernel_size=(15,), stride=(1,), padding=7),
-            nn.Conv1d(128, 128, kernel_size=(41,), groups=4, stride=(1,), padding=20),
-            nn.Conv1d(128, 256, kernel_size=(41,), groups=16, stride=(1,), padding=20),
-            nn.Conv1d(256, 512, kernel_size=(41,), groups=16, stride=(1,), padding=20),
-            nn.Conv1d(512, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20),
-            nn.Conv1d(1024, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20),
-            nn.Conv1d(1024, 1024, kernel_size=(5,), stride=(1,), padding=2),
+            weight_norm(nn.Conv1d(1, 128, kernel_size=(15,), stride=(1,), padding=7)),
+            weight_norm(nn.Conv1d(128, 128, kernel_size=(41,), groups=4, stride=(1,), padding=20)),
+            weight_norm(nn.Conv1d(128, 256, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            weight_norm(nn.Conv1d(256, 512, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            weight_norm(nn.Conv1d(512, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            weight_norm(nn.Conv1d(1024, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            weight_norm(nn.Conv1d(1024, 1024, kernel_size=(5,), stride=(1,), padding=2)),
         ])
 
-        self.convolution_out_layer = nn.Conv1d(1024, 1, kernel_size=(3,), stride=(1,), padding=1)
+        self.convolution_out_layer = weight_norm(nn.Conv1d(1024, 1, kernel_size=(3,), stride=(1,), padding=1))
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
         self.dwt_cache = None
 
@@ -76,8 +78,8 @@ class RSD(nn.Module):
         super(RSD, self).__init__()
         self.DWT = DiscreteWaveletTransform(device)
         self.dwt_conv_layers = nn.ModuleList([
-            nn.Conv1d(2, 1, kernel_size=(1,), stride=(1,), padding=0),
-            nn.Conv1d(4, 1, kernel_size=(1,), stride=(1,), padding=0),
+            weight_norm(nn.Conv1d(2, 1, kernel_size=(1,), stride=(1,), padding=0)),
+            weight_norm(nn.Conv1d(4, 1, kernel_size=(1,), stride=(1,), padding=0)),
             ])
         self.discriminators = nn.ModuleList([
             SubDiscriminator(device, negative_slope),

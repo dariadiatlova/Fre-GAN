@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from torch.nn.utils import weight_norm
+
 from src.model.dwt import DiscreteWaveletTransform
 
 
@@ -12,26 +14,26 @@ class SubDiscriminator(nn.Module):
         self.DWT = DiscreteWaveletTransform(device)
 
         self.dwt_conv_layers = nn.ModuleList([
-            nn.Conv1d(2, 1, kernel_size=(1,)),
-            nn.Conv1d(4, 1, kernel_size=(1,)),
-            nn.Conv1d(8, 1, kernel_size=(1,))
+            weight_norm(nn.Conv1d(2, 1, kernel_size=(1,))),
+            weight_norm(nn.Conv1d(4, 1, kernel_size=(1,))),
+            weight_norm(nn.Conv1d(8, 1, kernel_size=(1,)))
         ])
 
         self.projection_layers = nn.ModuleList([
-            nn.Conv2d(1, 32, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(1, 128, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(1, 512, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))
+            weight_norm(nn.Conv2d(1, 32, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(1, 128, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(1, 512, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)))
         ])
 
         self.convolution_layers = nn.ModuleList([
-            nn.Conv2d(1, 32, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(32, 128, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(128, 512, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(512, 1024, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0)),
-            nn.Conv2d(1024, 1024, kernel_size=(5, 1), stride=(1,), padding=(2, 0)),
+            weight_norm(nn.Conv2d(1, 32, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(32, 128, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(128, 512, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(512, 1024, kernel_size=(5, 1), stride=(3, 1), padding=(2, 0))),
+            weight_norm(nn.Conv2d(1024, 1024, kernel_size=(5, 1), stride=(1,), padding=(2, 0))),
         ])
 
-        self.convolution_out_layer = nn.Conv2d(1024, 1, kernel_size=(3, 1), stride=(1,), padding=(1, 0))
+        self.convolution_out_layer = weight_norm(nn.Conv2d(1024, 1, kernel_size=(3, 1), stride=(1,), padding=(1, 0)))
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
         self.dwt_cache = None
 
