@@ -1,4 +1,5 @@
 dataset:
+  data_format: ".mp3"
   dataset_size: 200
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"

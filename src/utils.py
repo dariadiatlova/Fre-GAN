@@ -8,9 +8,10 @@ import torch
 from torchaudio import transforms
 
 
-def get_file_names(tsv_filepath: str, root_path: str):
+def get_file_names(tsv_filepath: str, root_path: str, extension: str):
     """
     Function takes the path the tsv file and returns the column with filenames, changed from .mp3 to .wav.
+    :param extension: ".mp3" or ".wav"
     :param tsv_filepath: str
     :param root_path: str path to the root directory with the extracted filenames
     :return: ndarray
@@ -21,7 +22,7 @@ def get_file_names(tsv_filepath: str, root_path: str):
     wav_filenames = []
     for filename in mp3_filenames:
         if pattern.search(filename) is not None:
-            wav_filenames.append(root_path + pattern.search(filename).group() + ".wav")
+            wav_filenames.append(root_path + pattern.search(filename).group() + extension)
     return np.array(wav_filenames)
 
 

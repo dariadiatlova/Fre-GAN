@@ -26,7 +26,11 @@ class MelDataset(Dataset):
         else:
             tsv_filepath = self.val_filepath
 
-        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
+        if self.data_format == ".mp3":
+            folder = "clips"
+        else:
+            folder = "audio"
+        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/{folder}/", self.data_format)
 
         self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)
