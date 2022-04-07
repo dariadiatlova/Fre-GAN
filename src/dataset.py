@@ -6,7 +6,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from data import DATA_PATH
-from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram
+from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram, \
+    write_wav_file
 
 
 class MelDataset(Dataset):
@@ -46,7 +47,7 @@ class MelDataset(Dataset):
                                                     f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        norm_audio = normalize_amplitudes(audio)
+        norm_audio = normalize_amplitudes(resampled_audio)
 
         # pad from both sides or / truncate from right
         padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
@@ -98,9 +99,20 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataL
     test_config = dataset_config
     test_config["target_audio_length"] = 22050 * 5
     test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
-                                 batch_size=1,
+                                 batch_size=4,
                                  shuffle=True,
                                  pin_memory=True,
                                  num_workers=dataset_config["num_workers"])
 
     return train_dataloader, val_dataloader, test_dataloader
+
+
+# import omegaconf
+# config = omegaconf.OmegaConf.load("/Users/diat.lov/GitHub/Fre-GAN/src/config.yaml")
+# config = omegaconf.OmegaConf.to_container(config, resolve=True)
+# dataset_config = config["dataset"]
+# test_config = dataset_config
+# test_config["target_audio_length"] = 22050 * 5
+# dataset = MelDataset(test_config, train=True)
+# sample = dataset[0][1].detach().cpu().numpy()
+# write_wav_file(sample, "/Users/diat.lov/Desktop/sample.wav")
