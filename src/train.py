@@ -45,7 +45,7 @@ def main(config: Dict):
     if wandb_config["checkpoint_directory"] is not None:
         model = FreGan.load_from_checkpoint(checkpoint_path=wandb_config["checkpoint_directory"], config=config)
     else:
-        model = FreGan(config)
+        model = FreGan(config, val_loader=val_loader)
     trainer.fit(model, train_loader, val_loader)
 
 

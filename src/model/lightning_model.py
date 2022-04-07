@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 from itertools import chain
 
 import numpy as np
@@ -14,7 +14,7 @@ from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict, inference: bool = False):
+    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None, inference: bool = False):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
@@ -25,6 +25,9 @@ class FreGan(LightningModule):
         self.generator = RCG(config["rcg"])
         if inference:
             self.generator.remove_weight_norm()
+
+        if val_loader is not None:
+            self.val_loader = val_loader
 
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
@@ -140,7 +143,7 @@ class FreGan(LightningModule):
             self.generator.eval()
 
             with torch.no_grad():
-                for batch in self.val_dataloader():
+                for batch in self.val_loader:
                     mels, wavs = batch
                     generated_samples = self.generator(mels)
                     # grab only 1 batch
