@@ -13,7 +13,7 @@ from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict, inference: bool):
+    def __init__(self, config: Dict, inference: bool = False):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
