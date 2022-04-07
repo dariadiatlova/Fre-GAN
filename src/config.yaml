@@ -31,14 +31,14 @@ fre-gan:
   optimizer: "AdamW"
   current_device: "cuda"
   save_every_epoch: 1
-  lr: 0.0002
+  lr: 0.00019998
   b1: 0.8
   b2: 0.999
   lr_decay: 0.999
 
 wandb:
   progress_bar_refresh_rate: 1
-  checkpoint_directory: null
+  checkpoint_directory: "/content/drive/MyDrive/VKResearch/wandb/run-20220407_173834-8lb0anhu/files/epoch=0-step=530.ckpt"
   project: "Full-Colab-Fre-GAN"
   offline: false
   log_every_n_steps: 10
