@@ -14,7 +14,8 @@ RUN apt-get install -y vim-common \
 COPY requirements.txt /root/Fre-GAN/requirements.txt
 WORKDIR /root/Fre-GAN
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 COPY . /home/Fre-GAN
 
