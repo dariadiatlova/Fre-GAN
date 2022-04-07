@@ -11,12 +11,11 @@ RUN apt-get install -y vim-common \
                        wget \
                        python3-pip \
 
-COPY requirements.txt /root/requirements.txt
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
 RUN mkdir /home/Fre-GAN
 ADD . /home/Fre-GAN
 WORKDIR /home/Fre-GAN
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/home/Fre-GAN"
