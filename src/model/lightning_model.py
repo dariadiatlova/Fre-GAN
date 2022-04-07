@@ -145,7 +145,7 @@ class FreGan(LightningModule):
             with torch.no_grad():
                 for batch in self.val_loader:
                     mels, wavs = batch
-                    generated_samples = self.generator(mels)
+                    generated_samples = self.generator(mels.to(self.current_device))
                     # grab only 1 batch
                     break
 
