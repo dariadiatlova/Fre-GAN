@@ -21,3 +21,10 @@ After running [`download.sh`](download.sh) script folders should be placed as fo
               | __init__.py
               | train.tsv
               | test.tsv
+
+### 2. Docker 
+
+To train model in `Docker` please, run from the root of this repository: 
+
+
+      docker build -t fre-gan:train .
