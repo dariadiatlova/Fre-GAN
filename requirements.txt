@@ -8,5 +8,6 @@ pytorch-lightning~=1.5.10
 tqdm~=4.63.0
 wandb~=0.12.11
 numpy~=1.21.5
-pandas~=0.4.1
 pytest~=7.1.1
+pandas
+python-ffmpeg
