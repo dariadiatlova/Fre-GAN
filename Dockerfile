@@ -2,7 +2,7 @@ FROM nvidia/cuda:10.1-runtime-ubuntu18.04
 
 RUN set -xe \
         && apt-get -y upgrade \
-        && apt-get install -y python3-pip
+        && apt-get install -y python3-pip \
         && apt-get install -y vim-common \
         && apt-get install -y tmux \
         && apt-get install -y ffmpeg \
