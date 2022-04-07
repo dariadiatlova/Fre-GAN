@@ -2,9 +2,13 @@ FROM nvidia/cuda:10.1-runtime-ubuntu18.04
 
 RUN apt-get update && apt-get install -y \
     tmux \
-    ffmpeg libsm6 libxext6 \
-    unzip tar \
-    wget vim \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    unzip \
+    tar \
+    wget \
+    vim \
     python3-pip \
 
 COPY requirements.txt ./
