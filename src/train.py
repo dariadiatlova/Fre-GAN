@@ -41,11 +41,11 @@ def main(config: Dict):
         callbacks=[callbacks, progress_bar]
     )
 
-    train_loader, val_loader = get_dataloaders(config["dataset"])
+    train_loader, val_loader, test_loader = get_dataloaders(config["dataset"])
     if wandb_config["checkpoint_directory"] is not None:
         model = FreGan.load_from_checkpoint(checkpoint_path=wandb_config["checkpoint_directory"], config=config)
     else:
-        model = FreGan(config, val_loader=val_loader)
+        model = FreGan(config, val_loader=test_loader)
     trainer.fit(model, train_loader, val_loader)
 
 

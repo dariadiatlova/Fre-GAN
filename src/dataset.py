@@ -82,16 +82,25 @@ class MelDataset(Dataset):
             return item
 
 
-def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
+def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
     train_dataloader = DataLoader(MelDataset(dataset_config, train=True),
                                   batch_size=dataset_config["batch_size"],
                                   shuffle=False,
                                   pin_memory=True,
                                   num_workers=dataset_config["num_workers"])
 
-    test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
+    val_dataloader = DataLoader(MelDataset(dataset_config, train=False),
                                  batch_size=dataset_config["batch_size"],
                                  shuffle=False,
                                  pin_memory=True,
                                  num_workers=dataset_config["num_workers"])
-    return train_dataloader, test_dataloader
+
+    test_config = dataset_config
+    test_config["target_audio_length"] = 22050 * 5
+    test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
+                                 batch_size=1,
+                                 shuffle=True,
+                                 pin_memory=True,
+                                 num_workers=dataset_config["num_workers"])
+
+    return train_dataloader, val_dataloader, test_dataloader
