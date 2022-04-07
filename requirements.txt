@@ -1,5 +1,5 @@
 ffmpeg~=1.4
-ffmpeg-python~=0.2.0
+ffmpeg-python
 pywavelets~=1.0.3
 librosa~=0.9.1
 soundfile~=0.10.3
