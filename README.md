@@ -27,4 +27,4 @@ After running [`download.sh`](download.sh) script folders should be placed as fo
 To train model in `Docker` please, run from the root of this repository: 
 
 
-      docker build -t fre-gan:train .
+      docker build --network=host -t fre-gan:train .
