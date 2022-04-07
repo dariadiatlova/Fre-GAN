@@ -1,7 +1,11 @@
 FROM nvidia/cuda:10.1-runtime-ubuntu18.04
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y python-pip
-RUN apt-get install -y vim-common \
+
+RUN apt-get install -y python3.8 \
+                       python3-distutils \
+                       python3-apt \
+                       vim-common \
                        tmux \
                        ffmpeg \
                        libsm6 \
