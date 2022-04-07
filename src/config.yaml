@@ -30,13 +30,13 @@ fre-gan:
   val_every_epoch: 1
   optimizer: "AdamW"
   current_device: "cuda"
+  save_every_epoch: 1
   lr: 0.0002
   b1: 0.8
   b2: 0.999
   lr_decay: 0.999
 
 wandb:
-  save_every_epoch: 1
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
   project: "Test-Colab-Fre-GAN"
