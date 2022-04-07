@@ -1,3 +1,4 @@
+import random
 from typing import Dict, Optional
 from itertools import chain
 
@@ -27,7 +28,7 @@ class FreGan(LightningModule):
             self.generator.remove_weight_norm()
 
         if val_loader is not None:
-            self.val_loader = val_loader
+            self.val_samples = [i for i in val_loader]
 
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
@@ -143,11 +144,8 @@ class FreGan(LightningModule):
             self.generator.eval()
 
             with torch.no_grad():
-                for batch in self.val_loader:
-                    mels, wavs = batch
-                    generated_samples = self.generator(mels.to(self.current_device))
-                    # grab only 1 batch
-                    break
+                mels, wavs = random.choice(self.val_samples)
+                generated_samples = self.generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
                     generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()

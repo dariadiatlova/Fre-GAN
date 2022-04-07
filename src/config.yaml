@@ -25,7 +25,7 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 10
+  epochs: 5
   n_gpus: 1
   val_every_epoch: 1
   optimizer: "AdamW"

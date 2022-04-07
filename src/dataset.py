@@ -6,8 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from data import DATA_PATH
-from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram, \
-    write_wav_file
+from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram
 
 
 class MelDataset(Dataset):
@@ -105,14 +104,3 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataL
                                  num_workers=dataset_config["num_workers"])
 
     return train_dataloader, val_dataloader, test_dataloader
-
-
-# import omegaconf
-# config = omegaconf.OmegaConf.load("/Users/diat.lov/GitHub/Fre-GAN/src/config.yaml")
-# config = omegaconf.OmegaConf.to_container(config, resolve=True)
-# dataset_config = config["dataset"]
-# test_config = dataset_config
-# test_config["target_audio_length"] = 22050 * 5
-# dataset = MelDataset(test_config, train=True)
-# sample = dataset[0][1].detach().cpu().numpy()
-# write_wav_file(sample, "/Users/diat.lov/Desktop/sample.wav")
