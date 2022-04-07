@@ -7,7 +7,7 @@ dataset:
   normalize_spec: true
   f_max: 8000
   n_channels: 1
-  target_audio_length: 7248
+  target_audio_length: 7408
   sr: 48000
   target_sr: 22050
   n_fft: 1024
@@ -25,7 +25,7 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 100
+  epochs: 200
   n_gpus: 1
   val_every_epoch: 50
   save_every_epoch: 20

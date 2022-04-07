@@ -13,7 +13,7 @@ from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict, inference: bool):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
@@ -21,8 +21,10 @@ class FreGan(LightningModule):
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
-
         self.generator = RCG(config["rcg"])
+        if inference:
+            self.generator.remove_weight_norm()
+
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
 
@@ -61,16 +63,16 @@ class FreGan(LightningModule):
 
     def _compute_metrics(self, batch):
         mel_spectrogram, y_true = batch
-        ys_gen = self.generator(mel_spectrogram).squeeze(1).detach().cpu().numpy()
-        ys_true = y_true.detach().cpu().numpy()
+        ys_gen = self.generator(mel_spectrogram).squeeze(1)
+        ys_true = y_true
 
         rmses = []
         mcds = []
 
         for y_true, y_gen in zip(ys_true, ys_gen):
             mcds.append(mel_cepstral_distance(y_true, y_gen))
-            rmses.append(rmse_f0(y_true, y_gen))
-        return np.mean(mcds), np.mean(rmses)
+            rmses.append(rmse_f0(y_true.detach().cpu().numpy(), y_gen.detach().cpu().numpy()))
+        return torch.mean(torch.tensor(mcds)), np.mean(rmses)
 
     # ========== Main PyTorch-Lightning hooks ==========
 
