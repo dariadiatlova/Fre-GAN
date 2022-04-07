@@ -28,7 +28,7 @@ class FreGan(LightningModule):
             self.generator.remove_weight_norm()
 
         if val_loader is not None:
-            self.val_samples = [i for i in val_loader]
+            self.val_samples = [batch for batch in val_loader]
 
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
@@ -150,8 +150,8 @@ class FreGan(LightningModule):
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
                     generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
                     original = original.detach().cpu().numpy()
-                    if np.max(abs(original)) > 1:
-                        original /= np.max(abs(original))
+                    if np.max(abs(generated)) > 1:
+                        original /= np.max(abs(generated))
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
                     )
