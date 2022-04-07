@@ -11,8 +11,8 @@ RUN apt-get install -y vim-common \
                        wget \
                        python3-pip \
 
-COPY requirements.txt /home/Fre-GAN/requirements.txt
-WORKDIR /home/Fre-GAN
+COPY requirements.txt /root/Fre-GAN/requirements.txt
+WORKDIR /root/Fre-GAN
 
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
