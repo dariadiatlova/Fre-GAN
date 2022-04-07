@@ -3,14 +3,10 @@ pywavelets~=1.0.3
 librosa~=0.7.2
 soundfile~=0.10.3
 omegaconf~=1.4.1
-
-torch~=1.8.1
-torchaudio~=0.8.1
+torchaudio
 pytorch-lightning~=1.5.10
 tqdm~=4.63.0
 wandb~=0.12.11
-
 numpy~=1.21.5
 pandas~=0.4.1
-
 pytest~=7.1.1
