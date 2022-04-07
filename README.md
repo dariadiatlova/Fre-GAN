@@ -28,3 +28,12 @@ To train model in `Docker` please, run from the root of this repository:
 
 
       docker build --network=host -t fre-gan:train .
+      
+After build is complit, to run using GPU:
+
+      docker run --gpus 1 -ti fre-gan:train
+      
+For CPU-only:
+
+      docker run -ti fre-gan:train
+      
