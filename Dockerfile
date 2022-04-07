@@ -9,7 +9,7 @@ RUN apt-get install -y vim-common \
                        unzip \
                        tar \
                        wget \
-                       python3-pip \
+                       python3-pip
 
 COPY requirements.txt /root/Fre-GAN/requirements.txt
 WORKDIR /root/Fre-GAN
