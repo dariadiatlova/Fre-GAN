@@ -5,6 +5,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y python-pip
 RUN apt-get install -y python3.8 \
                        python3-distutils \
                        python3-apt \
+                       python3-pip \
                        vim-common \
                        tmux \
                        ffmpeg \
@@ -12,14 +13,14 @@ RUN apt-get install -y python3.8 \
                        libxext6 \
                        unzip \
                        tar \
-                       wget \
-                       python3-pip
+                       curl \
+                       wget
 
 COPY requirements.txt /root/Fre-GAN/requirements.txt
 WORKDIR /root/Fre-GAN
 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN . ~/.bashrc && pip install -r requirements.txt
 
 COPY . /home/Fre-GAN
 
