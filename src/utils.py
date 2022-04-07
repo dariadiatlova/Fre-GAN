@@ -11,6 +11,12 @@ from torchaudio import transforms
 import soundfile as sf
 
 
+def write_wav_file(data: np.ndarray, filepath: str, sample_rate: int = 22050):
+    if np.max(abs(data)) > 1:
+        data /= max(abs(data))
+    sf.write(filepath, data, sample_rate)
+
+
 def get_file_names(tsv_filepath: str, root_path: str):
     """
     Function takes the path the tsv file and returns the column with filenames, changed from .mp3 to .wav.

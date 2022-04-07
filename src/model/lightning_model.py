@@ -3,6 +3,7 @@ from itertools import chain
 
 import numpy as np
 import torch
+import wandb
 from pytorch_lightning import LightningModule
 
 from src.model.losses import generator_loss, discriminator_loss
@@ -63,15 +64,15 @@ class FreGan(LightningModule):
 
     def _compute_metrics(self, batch):
         mel_spectrogram, y_true = batch
-        ys_gen = self.generator(mel_spectrogram).squeeze(1)
-        ys_true = y_true
+        ys_gen = self.generator(mel_spectrogram).squeeze(1).detach()
+        ys_true = y_true.detach()
 
         rmses = []
         mcds = []
 
         for y_true, y_gen in zip(ys_true, ys_gen):
             mcds.append(mel_cepstral_distance(y_true, y_gen))
-            rmses.append(rmse_f0(y_true.detach().cpu().numpy(), y_gen.detach().cpu().numpy()))
+            rmses.append(rmse_f0(y_true.cpu().numpy(), y_gen.detach().cpu().numpy()))
         return torch.mean(torch.tensor(mcds)), np.mean(rmses)
 
     # ========== Main PyTorch-Lightning hooks ==========
@@ -80,11 +81,11 @@ class FreGan(LightningModule):
         if self.optimizer == "Adam":
             opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.Adam(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                     lr=self.lr, betas=(self.b1, self.b2))
+                                     lr=self.lr * 0.1, betas=(self.b1, self.b2))
         else:
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                      lr=self.lr, betas=(self.b1, self.b2))
+                                      lr=self.lr * 0.1, betas=(self.b1, self.b2))
 
         scheduler_g = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.lr_decay)
         scheduler_d = torch.optim.lr_scheduler.ExponentialLR(opt_d, gamma=self.lr_decay)
@@ -133,3 +134,26 @@ class FreGan(LightningModule):
             mel_spectrogram, y_true = batch
             y_gen = self.generator(mel_spectrogram)
             self._discriminator_shared_step(y_gen, y_true, "val")
+
+    def on_train_epoch_end(self):
+        if self.current_epoch % self.save_every_epoch == 0:
+            self.generator.eval()
+
+            with torch.no_grad():
+                for batch in self.val_dataloader():
+                    mels, wavs = batch
+                    generated_samples = self.generator(mels)
+                    # grab only 1 batch
+                    break
+
+                for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
+                    original = original.detach().cpu().numpy()
+
+                    self.logger.experiment.log(
+                        {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
+                    )
+
+                    self.logger.experiment.log(
+                        {"original_audios": wandb.Audio(original, caption=f"Original_{i}", sample_rate=22050)}
+                    )
