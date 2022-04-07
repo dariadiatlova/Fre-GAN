@@ -6,10 +6,6 @@ librosa~=0.9.1
 soundfile~=0.10.3
 omegaconf~=2.1.1
 
-# cuda 10.2
-#pytorch~=1.9.1
-#torchaudio~=0.9.1
-
 torch~=1.8.1
 torchaudio~=0.8.1
 pytorch-lightning~=1.5.10
