@@ -1,17 +1,15 @@
 FROM nvidia/cuda:10.1-runtime-ubuntu18.04
 
-RUN set -xe \
-        && apt-get -y upgrade \
-        && apt-get install -y python3-pip \
-        && apt-get install -y vim-common \
-        && apt-get install -y tmux \
-        && apt-get install -y ffmpeg \
-        && apt-get install -y libsm6 \
-        && apt-get install -y libxext6 \
-        && apt-get install -y unzip \
-        && apt-get install -y tar \
-        && apt-get install -y wget
-
+RUN apt-get update && apt-get -y upgrade && apt-get install -y python-pip
+RUN apt-get install -y vim-common \
+                       tmux \
+                       ffmpeg \
+                       libsm6 \
+                       libxext6 \
+                       unzip \
+                       tar \
+                       wget \
+                       python3-pip
 
 COPY requirements.txt /root/Fre-GAN/requirements.txt
 WORKDIR /root/Fre-GAN
