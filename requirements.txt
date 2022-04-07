@@ -1,6 +1,6 @@
 ffmpeg~=1.4
 pywavelets~=1.0.3
-librosa~=0.9.1
+librosa~=0.7.2
 soundfile~=0.10.3
 omegaconf~=2.1.1
 
