@@ -1,17 +1,16 @@
-import random
-from typing import Dict, Optional
-from itertools import chain
-
 import numpy as np
 import torch
 import wandb
 from pytorch_lightning import LightningModule
 
+from itertools import chain
+from typing import Dict, Optional
+
 from src.model.losses import generator_loss, discriminator_loss
+from src.model.metrics import mel_cepstral_distance, rmse_f0
 from src.model.modules.generator import RCG
 from src.model.modules.period_discriminator import RPD
 from src.model.modules.scale_discriminator import RSD
-from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
@@ -143,6 +142,7 @@ class FreGan(LightningModule):
         if self.current_epoch % self.save_every_epoch == 0:
             self.generator.eval()
             idx = self.current_epoch if self.current_epoch < len(self.val_samples) else 0
+
             with torch.no_grad():
                 mels, wavs = self.val_samples[idx]
                 generated_samples = self.generator(mels.to(self.current_device))
@@ -150,8 +150,10 @@ class FreGan(LightningModule):
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
                     generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
                     original = original.detach().cpu().numpy()
+
                     if np.max(abs(generated)) > 1:
                         original /= np.max(abs(generated))
+
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
                     )
