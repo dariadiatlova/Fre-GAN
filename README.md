@@ -22,15 +22,21 @@ After running [`download.sh`](download.sh) script folders should be placed as fo
               | train.tsv
               | test.tsv
 
+
+
 ### 2. Training setup
 
-#### Step 1: Adjust training parameters in [`config.yaml`](src/config.yaml)
 
-#### Step 2: To train model in `Docker` please, run from the root of this repository: 
+Step 1: Adjust training parameters in [`config.yaml`](src/config.yaml)
+
+
+
+Step 2: To train model in `Docker` please, run from the root of this repository: 
 
       docker build --network=host -t fre-gan:train .
       
-#### Step 3: After build is complit, to run using `GPU`:
+      
+Step 3: After build is complit, to run using `GPU`:
 
       docker run --gpus 1 -ti fre-gan:train
       
@@ -38,9 +44,41 @@ For `CPU`-only:
 
       docker run -ti fre-gan:train
       
-#### Step 4: From the repository root run:
+      
+Step 4: From the repository root run:
 
       python3 -m src.train
       
       
 If you are not using Docker just skip steps 2 & 3 :)
+
+
+### 3. Evaluation setup
+
+Step 1 Download model wigths: [Dummy Weights](https://fre-gan.s3.eu-west-1.amazonaws.com/epoch%3D5.ckpt)
+
+Step 2: from the repository root run:
+
+      python3 -m src.inference -w <model_weights_path> -p <reference_wav_path>
+      
+      
+The following script will generate output wav-file in `data/generated_samples` directory. You can add a custom path with `-o` flag and
+obeserve other flags in `inference.py`(src/inference.py) script
+
+To run evaluation in Docker complete Step3 from training block before running the script.
+
+
+### 4. Baseline
+
+To train HiFi-GAN vocoder on `Common Voice Version 3.0` dataset:
+
+- follow the instructions to dataset loading in the first block;
+
+- clone [forked HiFi-GAN repository](https://github.com/dariadiatlova/hifi-gan/tree/common-voice-training);
+
+- run `train.py` from common-voice-branch.
+
+Instructions for evaluation are the same as in original repository. [Dummy Weights](https://hifi-gan.s3.eu-west-1.amazonaws.com/g_00000500) for inference.
+
+
+### 5. [Report](https://ionian-dogsled-238.notion.site/d28198092c6b4be3b7a6f866356e2ed7) :nerd_face:
