@@ -1,14 +1,13 @@
 dataset:
-  data_format: ".wav"
-  dataset_size: 320
+  dataset_size: null
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
-  batch_size: 16
+  batch_size: 4
   normalize_spec: true
   f_max: 8000
   n_channels: 1
-  target_audio_length: 8192
+  target_audio_length: 7408
   sr: 48000
   target_sr: 22050
   n_fft: 1024
@@ -26,12 +25,12 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 300
+  epochs: 10
   n_gpus: 1
-  val_every_epoch: 50
-  save_every_epoch: 25
+  val_every_epoch: 1
   optimizer: "AdamW"
   current_device: "cuda"
+  save_every_epoch: 1
   lr: 0.0002
   b1: 0.8
   b2: 0.999
@@ -40,6 +39,6 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "DataSphere-200-Fre-GAN"
+  project: "Docker-Run-Fre-GAN"
   offline: false
   log_every_n_steps: 10
