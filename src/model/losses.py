@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 from src.dataset import get_mel_spectrogram
 
 
@@ -26,7 +27,7 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
 def _mel_spectrogram_loss(y_true, y_gen, device: str):
     mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
     mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
-    return torch.mean(abs(mel_true - mel_gen)).to(device)
+    return F.l1_loss(mel_true, mel_gen).to(device)
 
 
 def _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen):
