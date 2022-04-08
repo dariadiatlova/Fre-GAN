@@ -1,5 +1,5 @@
 from collections import defaultdict
-from locale import normalize
+from librosa.util import normalize
 from typing import Dict, Optional, Tuple
 
 import librosa
