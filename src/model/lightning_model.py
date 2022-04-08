@@ -1,19 +1,20 @@
-from typing import Dict
-from itertools import chain
-
 import numpy as np
 import torch
+import wandb
 from pytorch_lightning import LightningModule
 
+from itertools import chain
+from typing import Dict, Optional
+
 from src.model.losses import generator_loss, discriminator_loss
+from src.model.metrics import mel_cepstral_distance, rmse_f0
 from src.model.modules.generator import RCG
 from src.model.modules.period_discriminator import RPD
 from src.model.modules.scale_discriminator import RSD
-from src.model.metrics import mel_cepstral_distance, rmse_f0
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict, inference: bool = False):
+    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None, inference: bool = False):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
@@ -22,8 +23,12 @@ class FreGan(LightningModule):
             setattr(self, key, value)
 
         self.generator = RCG(config["rcg"])
-        if self.inference:
+        if inference:
             self.generator.remove_weight_norm()
+
+        if val_loader is not None:
+            self.val_samples = [batch for batch in val_loader]
+
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
 
@@ -62,16 +67,16 @@ class FreGan(LightningModule):
 
     def _compute_metrics(self, batch):
         mel_spectrogram, y_true = batch
-        ys_gen = self.generator(mel_spectrogram).squeeze(1).detach().cpu().numpy()
-        ys_true = y_true.detach().cpu().numpy()
+        ys_gen = self.generator(mel_spectrogram).squeeze(1).detach()
+        ys_true = y_true.detach()
 
         rmses = []
         mcds = []
 
         for y_true, y_gen in zip(ys_true, ys_gen):
             mcds.append(mel_cepstral_distance(y_true, y_gen))
-            rmses.append(rmse_f0(y_true, y_gen))
-        return np.mean(mcds), np.mean(rmses)
+            rmses.append(rmse_f0(y_true.cpu().numpy(), y_gen.detach().cpu().numpy()))
+        return torch.mean(torch.tensor(mcds)), np.mean(rmses)
 
     # ========== Main PyTorch-Lightning hooks ==========
 
@@ -79,11 +84,11 @@ class FreGan(LightningModule):
         if self.optimizer == "Adam":
             opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.Adam(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                     lr=self.lr, betas=(self.b1, self.b2))
+                                     lr=self.lr * 0.1, betas=(self.b1, self.b2))
         else:
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                      lr=self.lr, betas=(self.b1, self.b2))
+                                      lr=self.lr * 0.1, betas=(self.b1, self.b2))
 
         scheduler_g = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.lr_decay)
         scheduler_d = torch.optim.lr_scheduler.ExponentialLR(opt_d, gamma=self.lr_decay)
@@ -132,3 +137,27 @@ class FreGan(LightningModule):
             mel_spectrogram, y_true = batch
             y_gen = self.generator(mel_spectrogram)
             self._discriminator_shared_step(y_gen, y_true, "val")
+
+    def on_train_epoch_end(self):
+        if self.current_epoch % self.save_every_epoch == 0:
+            self.generator.eval()
+            idx = self.current_epoch if self.current_epoch < len(self.val_samples) else 0
+
+            with torch.no_grad():
+                mels, wavs = self.val_samples[idx]
+                generated_samples = self.generator(mels.to(self.current_device))
+
+                for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
+                    original = original.detach().cpu().numpy()
+
+                    if np.max(abs(generated)) > 1:
+                        original /= np.max(abs(generated))
+
+                    self.logger.experiment.log(
+                        {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
+                    )
+
+                    self.logger.experiment.log(
+                        {"original_audios": wandb.Audio(original, caption=f"Original_{i}", sample_rate=22050)}
+                    )

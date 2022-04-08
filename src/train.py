@@ -16,6 +16,7 @@ def main(config: Dict):
     seed_everything(train_config["seed"])
 
     wandb_logger = WandbLogger(
+        save_dir="/content/drive/MyDrive/",
         project=wandb_config["project"],
         log_model=False,
         offline=wandb_config["offline"],
@@ -25,8 +26,8 @@ def main(config: Dict):
     # define model checkpoint callback
     callbacks = ModelCheckpoint(dirpath=wandb_logger.experiment.dir,
                                 monitor="train/generator_total_loss",
-                                save_top_k=3,
-                                every_n_epochs=25)
+                                save_top_k=-1,
+                                every_n_epochs=train_config["save_every_epoch"])
 
     progress_bar = TQDMProgressBar(refresh_rate=wandb_config["progress_bar_refresh_rate"])
 
@@ -39,11 +40,11 @@ def main(config: Dict):
         callbacks=[callbacks, progress_bar]
     )
 
-    train_loader, val_loader = get_dataloaders(config["dataset"])
+    train_loader, val_loader, test_loader = get_dataloaders(config["dataset"])
     if wandb_config["checkpoint_directory"] is not None:
         model = FreGan.load_from_checkpoint(checkpoint_path=wandb_config["checkpoint_directory"], config=config)
     else:
-        model = FreGan(config)
+        model = FreGan(config, val_loader=test_loader)
     trainer.fit(model, train_loader, val_loader)
 
 

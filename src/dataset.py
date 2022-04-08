@@ -26,11 +26,7 @@ class MelDataset(Dataset):
         else:
             tsv_filepath = self.val_filepath
 
-        if self.data_format == ".mp3":
-            folder = "clips"
-        else:
-            folder = "audio"
-        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/{folder}/", self.data_format)
+        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
 
         self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)
@@ -50,7 +46,7 @@ class MelDataset(Dataset):
                                                     f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        norm_audio = normalize_amplitudes(audio)
+        norm_audio = normalize_amplitudes(resampled_audio)
 
         # pad from both sides or / truncate from right
         padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
@@ -86,16 +82,25 @@ class MelDataset(Dataset):
             return item
 
 
-def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader]:
+def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
     train_dataloader = DataLoader(MelDataset(dataset_config, train=True),
                                   batch_size=dataset_config["batch_size"],
                                   shuffle=False,
                                   pin_memory=True,
                                   num_workers=dataset_config["num_workers"])
 
+    val_dataloader = DataLoader(MelDataset(dataset_config, train=False),
+                                batch_size=dataset_config["batch_size"],
+                                shuffle=False,
+                                pin_memory=True,
+                                num_workers=dataset_config["num_workers"])
+
+    test_config = dataset_config
+    test_config["target_audio_length"] = 22050 * 5
     test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
-                                 batch_size=dataset_config["batch_size"],
-                                 shuffle=False,
+                                 batch_size=4,
+                                 shuffle=True,
                                  pin_memory=True,
                                  num_workers=dataset_config["num_workers"])
-    return train_dataloader, test_dataloader
+
+    return train_dataloader, val_dataloader, test_dataloader
