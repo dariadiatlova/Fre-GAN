@@ -7,7 +7,7 @@ dataset:
   normalize_spec: true
   f_max: 8000
   n_channels: 1
-  target_audio_length: 7408
+  target_audio_length: 8192
   sr: 48000
   target_sr: 22050
   n_fft: 1024
