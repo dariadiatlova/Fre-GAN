@@ -1,6 +1,9 @@
+import random
+
 import numpy as np
 import pandas as pd
 import re
+import torch.nn.functional as F
 
 import librosa
 import torch
@@ -53,22 +56,20 @@ def load_audio(audio_filepath: str, sample_rate, logger_file: Optional[str] = No
         return
 
 
-def pad_input_audio_signal(input_signal: np.ndarray, target_length: int) -> torch.Tensor:
+def pad_input_audio_signal(audio: torch.Tensor, target_length: int) -> torch.Tensor:
     """
     Function takes input signal and align it with the target signal length.
-    :param input_signal: np.ndarray
+    :param audio: np.ndarray
     :param target_length: int, seconds * sample_rate
     :return:
     """
-    if len(input_signal) >= target_length:
-        pad_size = (len(input_signal) - target_length) // 2
-        input_signal = input_signal[pad_size:target_length + pad_size]
-        return torch.from_numpy(input_signal).type(torch.FloatTensor)
-
+    if audio.size(1) >= target_length:
+        max_audio_start = audio.size(1) - target_length
+        audio_start = random.randint(0, max_audio_start)
+        audio = audio[:, audio_start:audio_start + target_length]
     else:
-        pad_size = (target_length - len(input_signal))
-        padded_signal = np.concatenate([np.zeros(pad_size // 2), input_signal, np.zeros(pad_size - (pad_size // 2))])
-        return torch.from_numpy(padded_signal).type(torch.FloatTensor)
+        audio = F.pad(audio, (0, target_length - audio.size(1)), 'constant')
+    return audio
 
 
 def normalize_amplitudes(signal: np.ndarray) -> np.ndarray:

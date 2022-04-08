@@ -50,6 +50,7 @@ class MelDataset(Dataset):
         # control amplitudes are in a range [-1, 1]
         audio = audio / MAX_WAV_VALUE
         audio = normalize(audio) * 0.95
+        audio = audio.unsqueeze(0)
 
         # pad from both sides or / truncate from right
         padded_audio = pad_input_audio_signal(audio, self.target_audio_length)
