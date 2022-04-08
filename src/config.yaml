@@ -38,7 +38,7 @@ fre-gan:
 
 wandb:
   progress_bar_refresh_rate: 1
-  checkpoint_directory: "/content/drive/MyDrive/VKResearch/wandb/run-20220407_173834-8lb0anhu/files/epoch=0-step=530.ckpt"
-  project: "Full-Colab-Fre-GAN"
+  checkpoint_directory: null
+  project: "F1-Mel-Fre-GAN"
   offline: false
   log_every_n_steps: 10
