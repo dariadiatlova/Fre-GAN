@@ -2,7 +2,7 @@ dataset:
   dataset_size: 8
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
-  num_workers: 4
+  num_workers: 2
   batch_size: 2
   normalize_spec: true
   f_max: 8000
@@ -41,4 +41,4 @@ wandb:
   checkpoint_directory: null
   project: "F1-Mel-Fre-GAN"
   offline: false
-  log_every_n_steps: 10
+  log_every_n_steps: 1

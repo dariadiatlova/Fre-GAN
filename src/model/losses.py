@@ -26,7 +26,7 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
 
 def _mel_spectrogram_loss(y_true, y_gen, device: str):
     mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
-    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050).squeeze(1)
+    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
     return F.l1_loss(mel_gen, mel_true).to(device)
 
 
