@@ -83,5 +83,5 @@ def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int,
     mel_spectrogram = transforms.MelSpectrogram(sample_rate=sample_rate, n_fft=n_fft, hop_length=hop_length,
                                                 n_mels=n_mels, f_max=f_max, normalized=normalized,
                                                 onesided=True)(input_audio)
-    mel_spectrogram_db = transforms.AmplitudeToDB('magnitude')(mel_spectrogram)
-    return mel_spectrogram_db
+    # mel_spectrogram_db = transforms.AmplitudeToDB('magnitude')(mel_spectrogram)
+    return mel_spectrogram
