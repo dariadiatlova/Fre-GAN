@@ -22,18 +22,25 @@ After running [`download.sh`](download.sh) script folders should be placed as fo
               | train.tsv
               | test.tsv
 
-### 2. Docker 
+### 2. Training setup
 
-To train model in `Docker` please, run from the root of this repository: 
+#### Step 1: Adjust training parameters in [`config.yaml`](src/config.yaml)
 
+#### Step 2: To train model in `Docker` please, run from the root of this repository: 
 
       docker build --network=host -t fre-gan:train .
       
-After build is complit, to run using GPU:
+#### Step 3: After build is complit, to run using `GPU`:
 
       docker run --gpus 1 -ti fre-gan:train
       
-For CPU-only:
+For `CPU`-only:
 
       docker run -ti fre-gan:train
       
+#### Step 4: From the repository root run:
+
+      python3 -m src.train
+      
+      
+If you are not using Docker just skip steps 2 & 3 :)
