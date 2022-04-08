@@ -19,6 +19,6 @@ WORKDIR /root/Fre-GAN
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY . /home/Fre-GAN
+COPY . /root/Fre-GAN
 
 ENV PYTHONPATH "${PYTHONPATH}:/home/Fre-GAN"
