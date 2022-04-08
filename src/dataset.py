@@ -1,4 +1,5 @@
 from collections import defaultdict
+from locale import normalize
 from typing import Dict, Optional, Tuple
 
 import librosa
@@ -6,6 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from data import DATA_PATH
+from src.model.melspectrogram import MAX_WAV_VALUE, mel_spectrogram
 from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram
 
 
@@ -46,16 +48,17 @@ class MelDataset(Dataset):
                                                     f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        norm_audio = normalize_amplitudes(resampled_audio)
+        audio = audio / MAX_WAV_VALUE
+        audio = normalize(audio) * 0.95
 
         # pad from both sides or / truncate from right
-        padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
+        padded_audio = pad_input_audio_signal(audio, self.target_audio_length)
         assert padded_audio.shape[0] == self.target_audio_length, f"Expected all audios to be " \
                                                                   f"{self.target_audio_length} length, but got " \
                                                                   f"{audio_file_path} of length {padded_audio.shape[0]}"
 
-        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.target_sr,
-                                                 self.f_max, self.normalize_spec)
+        mel_spectrogram_db = mel_spectrogram(padded_audio, self.n_fft, self.n_mels, self.target_sr,
+                                             self.hop_size, self.win_si1ze, 0, self.f_max)
         return mel_spectrogram_db, padded_audio
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
