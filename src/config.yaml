@@ -37,6 +37,7 @@ fre-gan:
   lr_decay: 0.999
 
 wandb:
+  save_dir: null
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
   project: "Docker-Run-Fre-GAN"

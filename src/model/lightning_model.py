@@ -14,7 +14,7 @@ from src.model.modules.scale_discriminator import RSD
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None, inference: bool = False):
+    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
@@ -23,8 +23,6 @@ class FreGan(LightningModule):
             setattr(self, key, value)
 
         self.generator = RCG(config["rcg"])
-        if inference:
-            self.generator.remove_weight_norm()
 
         if val_loader is not None:
             self.val_samples = [batch for batch in val_loader]

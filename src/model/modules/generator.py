@@ -169,7 +169,5 @@ class RCG(nn.Module):
             remove_weight_norm(l)
         for l in self.condition_up_sampling:
             remove_weight_norm(l)
-        for l in self.residual_blocks:
-            remove_weight_norm(l)
         for l in self.residual_up_sampling:
             remove_weight_norm(l[1])
