@@ -1,5 +1,6 @@
 ffmpeg~=1.4
 pywavelets~=1.0.3
+numba==0.48
 librosa~=0.7.2
 soundfile~=0.10.3
 omegaconf~=2.0.1
