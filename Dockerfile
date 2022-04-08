@@ -1,4 +1,4 @@
-FROM pytorch/1.10.0-cuda11.3-cudnn8-runtime
+FROM pytorch/pytorch:1.10.0-cuda11.3-cudnn8-runtime
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y python-pip
 
