@@ -4,11 +4,11 @@ numba==0.48
 librosa~=0.7.2
 soundfile~=0.10.3
 omegaconf~=2.0.1
-torchaudio
 pytorch-lightning~=1.5.10
 tqdm~=4.63.0
 wandb~=0.12.11
 numpy~=1.21.5
 pytest~=7.1.1
+torchaudio
 pandas
 python-ffmpeg
