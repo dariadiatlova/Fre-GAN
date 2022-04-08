@@ -58,7 +58,7 @@ class MelDataset(Dataset):
 
         spectrogram = mel_spectrogram(padded_audio, self.n_fft, self.n_mels, self.target_sr,
                                              self.hop_size, self.win_si1ze, 0, self.f_max)
-        return spectrogram.squeeze(1), padded_audio
+        return spectrogram.squeeze(), padded_audio.squeeze(0)
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
         """
