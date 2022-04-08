@@ -84,11 +84,11 @@ class FreGan(LightningModule):
         if self.optimizer == "Adam":
             opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.Adam(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                     lr=self.lr * 0.1, betas=(self.b1, self.b2))
+                                     lr=self.lr, betas=(self.b1, self.b2))
         else:
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                      lr=self.lr * 0.1, betas=(self.b1, self.b2))
+                                      lr=self.lr, betas=(self.b1, self.b2))
 
         scheduler_g = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.lr_decay)
         scheduler_d = torch.optim.lr_scheduler.ExponentialLR(opt_d, gamma=self.lr_decay)

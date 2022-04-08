@@ -1,9 +1,9 @@
 dataset:
-  dataset_size: null
+  dataset_size: 8
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 4
-  batch_size: 8
+  batch_size: 2
   normalize_spec: true
   f_max: 8000
   n_channels: 1
@@ -31,7 +31,7 @@ fre-gan:
   optimizer: "AdamW"
   current_device: "cuda"
   save_every_epoch: 1
-  lr: 0.00019998
+  lr: 0.0002
   b1: 0.8
   b2: 0.999
   lr_decay: 0.999
