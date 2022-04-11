@@ -1,5 +1,5 @@
 dataset:
-  dataset_size: 16
+  dataset_size: null
   train_filepath: "train.tsv"
   val_filepath: "test.tsv"
   num_workers: 2
@@ -39,6 +39,6 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Mel-Fre-GAN"
+  project: "Mel-Fixed-Fre-GAN"
   offline: false
   log_every_n_steps: 8
