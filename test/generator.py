@@ -12,8 +12,10 @@ def test_generator_shapes():
     config = OmegaConf.to_container(config, resolve=True)
     target_audio_length = config["dataset"]["target_audio_length"]
     generator = RCG(config["rcg"])
+    dummy_spectrogram = torch.rand(2, 80, 32)
+
     for _ in range(10):
-        dummy_spectrogram = torch.rand(1, 80, 29)
+        dummy_spectrogram = torch.rand(1, 80, 32)
         generated_audio = generator(dummy_spectrogram)
         assert generated_audio.shape[-1] == target_audio_length, f"Expected generator to generate audio of length:" \
                                                                  f"{target_audio_length}, got an audio of length:" \

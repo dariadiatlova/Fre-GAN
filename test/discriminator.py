@@ -14,11 +14,11 @@ def test_discriminators():
     config = OmegaConf.to_container(config, resolve=True)
     target_audio_length = config["dataset"]["target_audio_length"]
     generator = RCG(config["rcg"])
-    period_discriminator = RPD()
-    scale_discriminator = RSD()
-    for _ in range(10):
+    period_discriminator = RPD("cpu", 0.1)
+    scale_discriminator = RSD("cpu", 0.1)
+    for _ in range(1):
         dummy_audio = torch.rand(1, target_audio_length).unsqueeze(1)
-        dummy_spectrogram = torch.rand(1, 80, 29)
+        dummy_spectrogram = torch.rand(1, 80, 32)
         generated_audio = generator(dummy_spectrogram)
         try:
             period_discriminator(dummy_audio, generated_audio)
