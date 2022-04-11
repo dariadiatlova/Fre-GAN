@@ -7,6 +7,7 @@ from itertools import chain
 from typing import Dict, Optional
 
 from src.model.losses import generator_loss, discriminator_loss
+from src.model.melspectrogram import MAX_WAV_VALUE
 from src.model.metrics import mel_cepstral_distance, rmse_f0
 from src.model.modules.generator import RCG
 from src.model.modules.period_discriminator import RPD
@@ -148,11 +149,8 @@ class FreGan(LightningModule):
                 generated_samples = self.generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
-                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
-                    original = original.detach().cpu().numpy()
-
-                    if np.max(abs(generated)) > 1:
-                        original /= np.max(abs(generated))
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy() * MAX_WAV_VALUE
+                    original = original.detach().cpu().numpy() * MAX_WAV_VALUE
 
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
