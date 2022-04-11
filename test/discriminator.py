@@ -18,7 +18,7 @@ def test_discriminators():
     scale_discriminator = RSD(device="cpu", negative_slope=0.1)
     for _ in range(10):
         dummy_audio = torch.rand(1, target_audio_length).unsqueeze(1)
-        dummy_spectrogram = torch.rand(1, 80, 29)
+        dummy_spectrogram = torch.rand(1, 80, 32)
         generated_audio = generator(dummy_spectrogram)
         try:
             period_discriminator(dummy_audio, generated_audio)
