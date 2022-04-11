@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import wandb
+from librosa.util import normalize
 from pytorch_lightning import LightningModule
 
 from itertools import chain
@@ -149,11 +150,11 @@ class FreGan(LightningModule):
                 generated_samples = self.generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
-                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy() * MAX_WAV_VALUE
-                    original = original.detach().cpu().numpy() * MAX_WAV_VALUE
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy() # * MAX_WAV_VALUE
+                    original = original.detach().cpu().numpy() # * MAX_WAV_VALUE
 
                     self.logger.experiment.log(
-                        {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
+                        {"generated_audios": wandb.Audio(normalize(generated), caption=f"Generated_{i}", sample_rate=22050)}
                     )
 
                     self.logger.experiment.log(

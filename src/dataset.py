@@ -49,8 +49,8 @@ class MelDataset(Dataset):
                                                               f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        audio = resampled_audio / MAX_WAV_VALUE
-        audio = normalize(audio) * 0.95
+        # audio = resampled_audio / MAX_WAV_VALUE
+        audio = normalize(resampled_audio) # * 0.95
         audio = torch.FloatTensor(audio).type(torch.FloatTensor)
         audio = audio.unsqueeze(0)
 
