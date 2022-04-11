@@ -44,9 +44,9 @@ class MelDataset(Dataset):
         resampled_audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
 
         # check that input channel matches config
-        assert len(audio.shape) == self.n_channels, f"Audio file {audio_file_path} have different number of channels!" \
-                                                    f"Expected input audio to have {self.n_channels}, " \
-                                                    f"got {audio.shape[0]} instead."
+        assert len(audio.resampled_audio) == self.n_channels, f"Audio file {audio_file_path} have different number of " \
+                                                              f"channels! Expected input audio to have {self.n_channels}," \
+                                                              f" got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
         audio = resampled_audio / MAX_WAV_VALUE
