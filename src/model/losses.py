@@ -1,12 +1,13 @@
 import torch
-from src.dataset import get_mel_spectrogram
+import torch.nn.functional as F
+
+from src.model.melspectrogram import mel_spectrogram
 
 
 def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real, scale_d_outs_gen):
     """
     Implementation of least-squares GAN objective: E|y_true - 1|**2 + E|y_fake|**2,
     adopted for for 2 discriminators. Each variable is a list of 4 tensors of 2d / 3d tensors.
-
     :param period_d_outs_real: List[torch.Tensor], output of RPD for real audio
     :param period_d_outs_gen: List[torch.Tensor], output of RPD for generated audio
     :param scale_d_outs_real: List[torch.Tensor], output of RSD for real audio
@@ -24,9 +25,9 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
 
 
 def _mel_spectrogram_loss(y_true, y_gen, device: str):
-    mel_true = get_mel_spectrogram(y_true.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
-    mel_gen = get_mel_spectrogram(y_gen.to("cpu"), hop_length=256, n_mels=80, n_fft=1024, sample_rate=22050)
-    return torch.mean(abs(mel_true - mel_gen)).to(device)
+    mel_true = mel_spectrogram(y_true.to("cpu"))
+    mel_gen = mel_spectrogram(y_gen.squeeze(1).to("cpu"))
+    return F.l1_loss(mel_gen, mel_true).to(device)
 
 
 def _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen):
@@ -59,4 +60,4 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
     stft_loss = _mel_spectrogram_loss(y_true, y_gen, device)
 
     total_generator_loss = prd_adv_l + srd_adv_l + (lambda_fm * (rpd_fm_loss + rsd_fm_loss)) + (lambda_mel * stft_loss)
-    return total_generator_loss, prd_adv_l + srd_adv_l, rpd_fm_loss + rsd_fm_loss, stft_loss
+    return total_generator_loss, prd_adv_l + srd_adv_l, lambda_fm * (rpd_fm_loss + rsd_fm_loss), stft_loss * lambda_mel

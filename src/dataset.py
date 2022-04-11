@@ -1,12 +1,15 @@
+import librosa
+import torch
+
+from torch.utils.data import Dataset, DataLoader
+from librosa.util import normalize
+
 from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
-import librosa
-import torch
-from torch.utils.data import Dataset, DataLoader
-
 from data import DATA_PATH
-from src.utils import get_file_names, load_audio, pad_input_audio_signal, normalize_amplitudes, get_mel_spectrogram
+from src.model.melspectrogram import MAX_WAV_VALUE, mel_spectrogram
+from src.utils import get_file_names, load_audio, pad_input_audio_signal
 
 
 class MelDataset(Dataset):
@@ -46,17 +49,17 @@ class MelDataset(Dataset):
                                                     f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        norm_audio = normalize_amplitudes(resampled_audio)
+        audio = resampled_audio / MAX_WAV_VALUE
+        audio = normalize(audio) * 0.95
+        audio = torch.FloatTensor(audio).type(torch.FloatTensor)
+        audio = audio.unsqueeze(0)
 
         # pad from both sides or / truncate from right
-        padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
-        assert padded_audio.shape[0] == self.target_audio_length, f"Expected all audios to be " \
-                                                                  f"{self.target_audio_length} length, but got " \
-                                                                  f"{audio_file_path} of length {padded_audio.shape[0]}"
+        padded_audio = pad_input_audio_signal(audio, self.target_audio_length)
 
-        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.target_sr,
-                                                 self.f_max, self.normalize_spec)
-        return mel_spectrogram_db, padded_audio
+        spectrogram = mel_spectrogram(padded_audio, self.n_fft, self.n_mels, self.target_sr,
+                                      self.hop_size, self.win_si1ze, 0, self.f_max)
+        return spectrogram.squeeze(), padded_audio.squeeze(0)
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
         """
@@ -95,6 +98,7 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataL
                                 pin_memory=True,
                                 num_workers=dataset_config["num_workers"])
 
+    # create dataloader for sampling 4, 5-seconds Audio in the end of each epoch and try to generate them
     test_config = dataset_config
     test_config["target_audio_length"] = 22050 * 5
     test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
