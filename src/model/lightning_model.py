@@ -8,7 +8,6 @@ from itertools import chain
 from typing import Dict, Optional
 
 from src.model.losses import generator_loss, discriminator_loss
-from src.model.melspectrogram import MAX_WAV_VALUE
 from src.model.metrics import mel_cepstral_distance, rmse_f0
 from src.model.modules.generator import RCG
 from src.model.modules.period_discriminator import RPD
