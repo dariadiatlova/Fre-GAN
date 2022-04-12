@@ -9,28 +9,32 @@ from typing import Dict, Optional
 
 from data.generated_samples import GENERATED_DIR_PATH
 from src.model.lightning_model import FreGan
-from src.utils import load_audio, pad_input_audio_signal, get_mel_spectrogram, write_wav_file
+from src.model.melspectrogram import mel_spectrogram
+from src.utils import load_audio, pad_input_audio_signal, write_wav_file
 
 
-def feature_extraction(params: Dict, target_sr: int):
+def feature_extraction(params: Dict, target_sr: int, config: Dict):
     audio = load_audio(params.audio_file_path, params.sample_rate)
     audio = librosa.resample(audio, orig_sr=params.sample_rate, target_sr=target_sr)
+    norm_audio = librosa.util.normalize(audio)
+    audio = torch.FloatTensor(norm_audio).type(torch.FloatTensor).unsqueeze(0)
     if params.segment_size:
-        audio = pad_input_audio_signal(audio, params.segment_size)
+        audio = pad_input_audio_signal(audio, params.target_audio_length)
     else:
         audio = torch.FloatTensor(audio)
-    mel_spectrogram = get_mel_spectrogram(audio, hop_length=256, n_mels=80, n_fft=1024, sample_rate=target_sr)
-    return mel_spectrogram
+    mel = mel_spectrogram(audio, config["n_fft"], config["n_mels"], config["target_sr"], config["hop_size"],
+                          config["win_si1ze"], config["f_min"], config["f_max"])
+    return mel.squeeze()
 
 
-def generate_audio(params: Dict, train_config: Dict) -> None:
+def generate_audio(params: Dict, train_config: Dict) -> str:
     config = OmegaConf.load(train_config)
     config = OmegaConf.to_container(config, resolve=True)
     model_weights = params.model_weights_path
     model = FreGan.load_from_checkpoint(checkpoint_path=model_weights, config=config, inference=True, val_loader=None)
     model.eval()
     model.generator.remove_weight_norm()
-    mel_spectrogram = feature_extraction(params, config["dataset"]["target_sr"])
+    mel_spectrogram = feature_extraction(params, config["dataset"]["target_sr"], config["dataset"])
     generated_audio = model(mel_spectrogram.unsqueeze(0)).squeeze(0).squeeze(0).detach().cpu().numpy()
     if params.output_wav_path:
         output_wav_path = params.output_wav_path
