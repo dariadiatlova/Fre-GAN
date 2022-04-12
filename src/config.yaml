@@ -27,7 +27,7 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 2
+  epochs: 10
   n_gpus: 1
   val_every_epoch: 1
   optimizer: "AdamW"
@@ -41,6 +41,6 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Checkpoint-Test-Run"
+  project: "Epoch-stopped-Checkpoint-Test-Run"
   offline: false
-  log_every_n_steps: 8
+  log_every_n_steps: 1
