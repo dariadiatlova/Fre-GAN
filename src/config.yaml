@@ -5,6 +5,7 @@ dataset:
   num_workers: 2
   batch_size: 8
   normalize_spec: true
+  f_min: 0
   f_max: 8000
   n_channels: 1
   target_audio_length: 8192

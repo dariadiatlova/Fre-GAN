@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import wandb
-from librosa.util import normalize
 from pytorch_lightning import LightningModule
 
 from itertools import chain
@@ -15,17 +14,16 @@ from src.model.modules.scale_discriminator import RSD
 
 
 class FreGan(LightningModule):
-    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None, inference: bool = False):
+    def __init__(self, config: Dict, val_loader: Optional[torch.utils.data.DataLoader] = None):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
+        self.dataset_config = config["dataset"]
 
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
         self.generator = RCG(config["rcg"])
-        if inference:
-            self.generator.remove_weight_norm()
 
         if val_loader is not None:
             self.val_samples = [batch for batch in val_loader]
@@ -41,7 +39,7 @@ class FreGan(LightningModule):
         y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
         total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.current_device
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.dataset_config
         )
 
         gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
@@ -149,11 +147,11 @@ class FreGan(LightningModule):
                 generated_samples = self.generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
-                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy() # * MAX_WAV_VALUE
-                    original = original.detach().cpu().numpy() # * MAX_WAV_VALUE
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
+                    original = original.detach().cpu().numpy()
 
                     self.logger.experiment.log(
-                        {"generated_audios": wandb.Audio(normalize(generated), caption=f"Generated_{i}", sample_rate=22050)}
+                        {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
                     )
 
                     self.logger.experiment.log(
