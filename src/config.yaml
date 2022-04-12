@@ -14,6 +14,7 @@ dataset:
   n_mels: 80
   hop_size: 256
   win_si1ze: 1024
+  test_sample_size: 5
 
 rcg:
   top_k: 4
