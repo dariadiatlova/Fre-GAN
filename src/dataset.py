@@ -56,7 +56,7 @@ class MelDataset(Dataset):
         padded_audio = pad_input_audio_signal(audio, self.target_audio_length)
 
         spectrogram = mel_spectrogram(
-            padded_audio, self.n_fft, self.n_mels, self.target_sr, self.hop_size, self.win_si1ze, self.f_min, self.f_max
+            padded_audio, self.n_fft, self.n_mels, self.target_sr, self.hop_size, self.win_size, self.f_min, self.f_max
         )
         return spectrogram.squeeze(), padded_audio.squeeze(0)
 
