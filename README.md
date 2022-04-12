@@ -55,7 +55,7 @@ If you are not using Docker just skip steps 2 & 3 :)
 
 ### 3. Evaluation setup
 
-Step 1 Download model wigths: [Dummy Weights](https://fre-gan.s3.eu-west-1.amazonaws.com/epoch%3D5.ckpt)
+Step 1 Download model wigths: [Dummy Weights](https://fre-gan.s3.eu-west-1.amazonaws.com/epoch%3D1-step%3D1060.ckpt) – 2nd training epoch, the words are hardly understandable and speech sounds robotic.
 
 Step 2: from the repository root run:
 
@@ -81,4 +81,4 @@ To train HiFi-GAN vocoder on `Common Voice Version 3.0` dataset:
 Instructions for evaluation are the same as in original repository. [Dummy Weights](https://hifi-gan.s3.eu-west-1.amazonaws.com/g_00000500) for inference.
 
 
-### 5. [Report](https://ionian-dogsled-238.notion.site/d28198092c6b4be3b7a6f866356e2ed7) :nerd_face:
+### 5. [Report](https://ionian-dogsled-238.notion.site/d28198092c6b4be3b7a6f866356e2ed7), [Wandb](https://wandb.ai/daryoou_sh/Mel-Fixed-Fre-GAN/reports/Fre-GAN--VmlldzoxODI3ODc2?accessToken=980x5j43uddkmorraspr3svkrss4ezz28fvbhein7ms4std13hupvt1w4m2ujfap) :nerd_face:
