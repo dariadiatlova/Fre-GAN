@@ -53,7 +53,7 @@ Step 4: From the repository root run:
 If you are not using Docker just skip steps 2 & 3 :)
 
 
-### 3. Evaluation setup
+### 3. Inference setup
 
 Step 1 Download model wigths: [Dummy Weights](https://fre-gan.s3.eu-west-1.amazonaws.com/epoch%3D1-step%3D1060.ckpt) – 2nd training epoch, the words are hardly understandable and speech sounds robotic.
 
@@ -65,7 +65,7 @@ Step 2: from the repository root run:
 The following script will generate output wav-file in `data/generated_samples` directory. You can add a custom path with `-o` flag and
 obeserve other flags in `inference.py`(src/inference.py) script
 
-To run evaluation in Docker complete Step3 from training block before running the script.
+To run inference in Docker complete Step3 from training block before running the script.
 
 
 ### 4. Baseline
