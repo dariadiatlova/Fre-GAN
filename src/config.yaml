@@ -5,6 +5,7 @@ dataset:
   num_workers: 4
   batch_size: 4
   normalize_spec: true
+  f_min: 0
   f_max: 8000
   n_channels: 1
   target_audio_length: 8192
@@ -14,6 +15,7 @@ dataset:
   n_mels: 80
   hop_size: 256
   win_si1ze: 1024
+  test_sample_size: 5
 
 rcg:
   top_k: 4

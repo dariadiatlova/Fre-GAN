@@ -7,7 +7,6 @@ from itertools import chain
 from typing import Dict, Optional
 
 from src.model.losses import generator_loss, discriminator_loss
-from src.model.melspectrogram import MAX_WAV_VALUE
 from src.model.metrics import mel_cepstral_distance, rmse_f0
 from src.model.modules.generator import RCG
 from src.model.modules.period_discriminator import RPD
@@ -19,6 +18,7 @@ class FreGan(LightningModule):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
+        self.dataset_config = config["dataset"]
 
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
@@ -39,7 +39,7 @@ class FreGan(LightningModule):
         y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
         total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.current_device
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.dataset_config
         )
 
         gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
@@ -147,8 +147,8 @@ class FreGan(LightningModule):
                 generated_samples = self.generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
-                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy() * MAX_WAV_VALUE
-                    original = original.detach().cpu().numpy() * MAX_WAV_VALUE
+                    generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
+                    original = original.detach().cpu().numpy()
 
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
