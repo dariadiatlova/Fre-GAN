@@ -38,14 +38,12 @@ def main(config: Dict):
         log_every_n_steps=wandb_config["log_every_n_steps"],
         logger=wandb_logger,
         gpus=train_config["n_gpus"],
-        callbacks=[callbacks, progress_bar]
+        callbacks=[callbacks, progress_bar],
+        resume_from_checkpoint=wandb_config.get("checkpoint_directory", None)
     )
 
     train_loader, val_loader, test_loader = get_dataloaders(config["dataset"])
-    if wandb_config["checkpoint_directory"] is not None:
-        model = FreGan.load_from_checkpoint(checkpoint_path=wandb_config["checkpoint_directory"], config=config)
-    else:
-        model = FreGan(config, val_loader=test_loader)
+    model = FreGan(config, val_loader=test_loader)
     trainer.fit(model, train_loader, val_loader)
 
 

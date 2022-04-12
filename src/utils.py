@@ -1,17 +1,14 @@
 import random
-
-import numpy as np
-import pandas as pd
 import re
-import torch.nn.functional as F
-
-import librosa
-import torch
 
 from typing import Optional
 
-from torchaudio import transforms
+import librosa
+import numpy as np
+import pandas as pd
 import soundfile as sf
+import torch
+import torch.nn.functional as F
 
 
 def write_wav_file(data: np.ndarray, filepath: str, sample_rate: int = 22050):
@@ -77,12 +74,3 @@ def normalize_amplitudes(signal: np.ndarray) -> np.ndarray:
     if max_value > 1:
         signal = signal / max_value
     return signal
-
-
-def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int, n_fft: int,
-                        sample_rate: int, f_max: int = 8000, normalized: bool = True) -> torch.Tensor:
-    mel_spectrogram = transforms.MelSpectrogram(sample_rate=sample_rate, n_fft=n_fft, hop_length=hop_length,
-                                                n_mels=n_mels, f_max=f_max, normalized=normalized,
-                                                onesided=True)(input_audio)
-    # mel_spectrogram_db = transforms.AmplitudeToDB('magnitude')(mel_spectrogram)
-    return mel_spectrogram
