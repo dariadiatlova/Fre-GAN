@@ -43,11 +43,6 @@ class MelDataset(Dataset):
         audio = load_audio(audio_file_path, self.sr, self._log_file)
         resampled_audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
 
-        # check that input channel matches config
-        assert len(resampled_audio) == self.n_channels, f"Audio file {audio_file_path} have different number of " \
-                                                        f"channels! Expected input audio to have " \
-                                                        f"{self.n_channels}, got {audio.shape[0]} instead."
-
         # control amplitudes are in a range [-1, 1]
         audio = normalize(resampled_audio)
         audio = torch.FloatTensor(audio).type(torch.FloatTensor).unsqueeze(0)
