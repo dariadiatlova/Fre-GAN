@@ -24,12 +24,13 @@ class MelDataset(Dataset):
         for key, value in config.items():
             setattr(self, key, value)
 
-        if train:
-            tsv_filepath = self.train_filepath
-        else:
-            tsv_filepath = self.val_filepath
+        tsv_filepath = self.dataset_path
+        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/", self.speaker_id)
 
-        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
+        if train:
+            self.audio_files = self.audio_files[:int(len(self.audio_files) * self.train_set)]
+        else:
+            self.audio_files = self.audio_files[int(len(self.audio_files) * self.train_set):]
 
         self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)

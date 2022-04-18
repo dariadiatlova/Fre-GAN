@@ -17,14 +17,17 @@ def write_wav_file(data: np.ndarray, filepath: str, sample_rate: int = 22050):
     sf.write(filepath, data, sample_rate)
 
 
-def get_file_names(tsv_filepath: str, root_path: str):
+def get_file_names(tsv_filepath: str, root_path: str, speaker_id: Optional[int] = None):
     """
     Function takes the path the tsv file and returns the column with filenames, changed from .mp3 to .wav.
     :param tsv_filepath: str
     :param root_path: str path to the root directory with the extracted filenames
+    :param speaker_id: int, str id of speaker to use for training and validation
     :return: ndarray
     """
     df = pd.read_csv(tsv_filepath, sep='\t')
+    if speaker_id:
+        df = df[df.client_id == speaker_id]
     mp3_filenames = np.array(df.path)
     pattern = re.compile(".*(?=.mp3)")
     wav_filenames = []

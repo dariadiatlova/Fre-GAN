@@ -1,7 +1,8 @@
 dataset:
+  speaker_id: "391f19cc56c80b71950a424f9dff058a997032adeb86035391cb71d437f6de3168091c5a7aad0cbd28cc5ae0c66ba67c4e000ce26070c6d3e2810288267220b9"
+  dataset_path: "train.tsv"
   dataset_size: 16
-  train_filepath: "train.tsv"
-  val_filepath: "test.tsv"
+  train_set: 0.8
   num_workers: 2
   batch_size: 8
   normalize_spec: true
@@ -41,6 +42,6 @@ fre-gan:
 wandb:
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Epoch-stopped-Checkpoint-Test-Run"
+  project: "Only-Speaker-FreGAN"
   offline: false
   log_every_n_steps: 1
