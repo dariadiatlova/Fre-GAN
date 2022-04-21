@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pandas as pd
 import re
@@ -17,14 +19,17 @@ def write_wav_file(data: np.ndarray, filepath: str, sample_rate: int = 22050):
     sf.write(filepath, data, sample_rate)
 
 
-def get_file_names(tsv_filepath: str, root_path: str):
+def get_file_names(tsv_filepath: str, root_path: str, speaker_id: Optional[int] = None):
     """
     Function takes the path the tsv file and returns the column with filenames, changed from .mp3 to .wav.
     :param tsv_filepath: str
     :param root_path: str path to the root directory with the extracted filenames
+    :param speaker_id: int, str id of speaker to use for training and validation
     :return: ndarray
     """
     df = pd.read_csv(tsv_filepath, sep='\t')
+    if speaker_id:
+        df = df[df.client_id == speaker_id]
     mp3_filenames = np.array(df.path)
     pattern = re.compile(".*(?=.mp3)")
     wav_filenames = []
@@ -61,8 +66,8 @@ def pad_input_audio_signal(input_signal: np.ndarray, target_length: int) -> torc
     :return:
     """
     if len(input_signal) >= target_length:
-        pad_size = (len(input_signal) - target_length) // 2
-        input_signal = input_signal[pad_size:target_length + pad_size]
+        start_sample = random.randint(0, input_signal.shape[0] - target_length)
+        input_signal = input_signal[start_sample:target_length + start_sample]
         return torch.from_numpy(input_signal).type(torch.FloatTensor)
 
     else:
@@ -72,16 +77,19 @@ def pad_input_audio_signal(input_signal: np.ndarray, target_length: int) -> torc
 
 
 def normalize_amplitudes(signal: np.ndarray) -> np.ndarray:
-    max_value = max(abs(np.max(signal)), abs(np.min(signal)))
+    max_value = max(abs(signal))
     if max_value > 1:
         signal = signal / max_value
     return signal
 
 
-def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int, n_fft: int,
-                        sample_rate: int, f_max: int = 8000, normalized: bool = True) -> torch.Tensor:
+def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int, n_fft: int, power: int,
+                        sample_rate: int, f_min: int = 0, f_max: int = 8000, normalized: bool = True) -> torch.Tensor:
     mel_spectrogram = transforms.MelSpectrogram(sample_rate=sample_rate, n_fft=n_fft, hop_length=hop_length,
                                                 n_mels=n_mels, f_max=f_max, normalized=normalized,
-                                                onesided=True)(input_audio)
-    mel_spectrogram_db = transforms.AmplitudeToDB('magnitude')(mel_spectrogram)
-    return mel_spectrogram_db
+                                                onesided=True)
+    mel_spectrogram.power = power
+    mel_basis = librosa.filters.mel(sr=sample_rate, n_fft=n_fft, n_mels=n_mels, fmin=f_min, fmax=f_max).T
+    mel_spectrogram.mel_scale.fb.copy_(torch.tensor(mel_basis))
+    mel = mel_spectrogram(input_audio).clamp_(min=1e-5).log_()
+    return mel

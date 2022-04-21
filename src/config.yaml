@@ -1,19 +1,22 @@
 dataset:
+  speaker_id: "391f19cc56c80b71950a424f9dff058a997032adeb86035391cb71d437f6de3168091c5a7aad0cbd28cc5ae0c66ba67c4e000ce26070c6d3e2810288267220b9"
   dataset_size: null
-  train_filepath: "train.tsv"
-  val_filepath: "test.tsv"
+  filepath: "train.tsv"
   num_workers: 4
   batch_size: 4
   normalize_spec: true
+  f_min: 0
   f_max: 8000
   n_channels: 1
-  target_audio_length: 7408
+  target_audio_length: 19456
+  train_set_size: 0.8
   sr: 48000
   target_sr: 22050
-  n_fft: 1024
+  n_fft: 1025
   n_mels: 80
   hop_size: 256
   win_si1ze: 1024
+  power: 1.0
 
 rcg:
   top_k: 4
@@ -25,12 +28,13 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 10
+  epochs: 5
   n_gpus: 1
   val_every_epoch: 1
   optimizer: "AdamW"
   current_device: "cuda"
   save_every_epoch: 1
+  warm_up_steps: 500
   lr: 0.0002
   b1: 0.8
   b2: 0.999
@@ -40,6 +44,6 @@ wandb:
   save_dir: null
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Docker-Run-Fre-GAN"
+  project: "Single-Speaker-Custom-Mel-Fre-GAN"
   offline: false
-  log_every_n_steps: 10
+  log_every_n_steps: 8

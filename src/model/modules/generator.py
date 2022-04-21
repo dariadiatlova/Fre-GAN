@@ -1,7 +1,7 @@
-from typing import Dict
-
 import torch
 import torch.nn as nn
+
+from typing import Dict
 
 from torch.nn.utils import weight_norm, remove_weight_norm
 
@@ -62,7 +62,7 @@ class RCG(nn.Module):
 
         self.conv_transposed_block = nn.ModuleList([
             weight_norm(nn.ConvTranspose1d(512, 256, kernel_size=(16,), stride=(8,), padding=(4,))),
-            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(3,))),
+            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,))),
             weight_norm(nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(32, 16, kernel_size=(4,), stride=(2,), padding=(1,)))
@@ -79,7 +79,7 @@ class RCG(nn.Module):
 
         self.condition_up_sampling = nn.ModuleList([
             weight_norm(nn.ConvTranspose1d(80, 256, kernel_size=(16,), stride=(8,), padding=(4,))),
-            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(3,))),
+            weight_norm(nn.ConvTranspose1d(256, 128, kernel_size=(8,), stride=(4,), padding=(2,))),
             weight_norm(nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
         ])
@@ -169,5 +169,9 @@ class RCG(nn.Module):
             remove_weight_norm(l)
         for l in self.condition_up_sampling:
             remove_weight_norm(l)
+        for block in self.residual_blocks:
+            for l1, l2 in zip(block.dilated_convolutions, block.convolutions):
+                remove_weight_norm(l1)
+                remove_weight_norm(l2)
         for l in self.residual_up_sampling:
             remove_weight_norm(l[1])

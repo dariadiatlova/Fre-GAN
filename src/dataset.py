@@ -17,16 +17,18 @@ class MelDataset(Dataset):
     """
     _log_file = "bad_samples.txt"
 
-    def __init__(self, config: Dict, train: bool):
+    def __init__(self, config: Dict, mode: str):
         for key, value in config.items():
             setattr(self, key, value)
 
-        if train:
-            tsv_filepath = self.train_filepath
-        else:
-            tsv_filepath = self.val_filepath
+        tsv_filepath = self.filepath
+        self.mode = mode
+        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/", self.speaker_id)
 
-        self.audio_files = get_file_names(f"{DATA_PATH}/{tsv_filepath}", f"{DATA_PATH}/audio/")
+        if self.mode == "train":
+            self.audio_files = self.audio_files[:int(len(self.audio_files) * self.train_set_size)]
+        else:
+            self.audio_files = self.audio_files[int(len(self.audio_files) * self.train_set_size):]
 
         self._mel_cached = defaultdict()
         self._n_samples = len(self.audio_files)
@@ -38,7 +40,7 @@ class MelDataset(Dataset):
         :return: 2 tensors: mel-spectrogram and original audio padded/truncated to the target_audio_length.
         """
         audio = load_audio(audio_file_path, self.sr, self._log_file)
-        resampled_audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
+        audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
 
         # check that input channel matches config
         assert len(audio.shape) == self.n_channels, f"Audio file {audio_file_path} have different number of channels!" \
@@ -46,17 +48,19 @@ class MelDataset(Dataset):
                                                     f"got {audio.shape[0]} instead."
 
         # control amplitudes are in a range [-1, 1]
-        norm_audio = normalize_amplitudes(resampled_audio)
+        audio = normalize_amplitudes(audio)
 
         # pad from both sides or / truncate from right
-        padded_audio = pad_input_audio_signal(norm_audio, self.target_audio_length)
-        assert padded_audio.shape[0] == self.target_audio_length, f"Expected all audios to be " \
-                                                                  f"{self.target_audio_length} length, but got " \
-                                                                  f"{audio_file_path} of length {padded_audio.shape[0]}"
+        if self.mode != "test":
+            audio = pad_input_audio_signal(audio, self.target_audio_length)
+            assert audio.shape[0] == self.target_audio_length, f"Expected all audios to be " \
+                                                               f"{self.target_audio_length} length, but got " \
+                                                               f"{audio_file_path} of length " \
+                                                               f"{audio.shape[0]}"
 
-        mel_spectrogram_db = get_mel_spectrogram(padded_audio, self.hop_size, self.n_mels, self.n_fft, self.target_sr,
-                                                 self.f_max, self.normalize_spec)
-        return mel_spectrogram_db, padded_audio
+        mel_spectrogram_db = get_mel_spectrogram(audio, self.hop_size, self.n_mels, self.n_fft, self.power,
+                                                 self.target_sr, self.f_min, self.f_max, self.normalize_spec)
+        return mel_spectrogram_db, audio
 
     def __cache_mel(self, idx: int) -> torch.Tensor:
         """
@@ -83,22 +87,20 @@ class MelDataset(Dataset):
 
 
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    train_dataloader = DataLoader(MelDataset(dataset_config, train=True),
+    train_dataloader = DataLoader(MelDataset(dataset_config, mode="train"),
                                   batch_size=dataset_config["batch_size"],
                                   shuffle=False,
                                   pin_memory=True,
                                   num_workers=dataset_config["num_workers"])
 
-    val_dataloader = DataLoader(MelDataset(dataset_config, train=False),
+    val_dataloader = DataLoader(MelDataset(dataset_config, mode="val"),
                                 batch_size=dataset_config["batch_size"],
                                 shuffle=False,
                                 pin_memory=True,
                                 num_workers=dataset_config["num_workers"])
 
-    test_config = dataset_config
-    test_config["target_audio_length"] = 22050 * 5
-    test_dataloader = DataLoader(MelDataset(dataset_config, train=False),
-                                 batch_size=4,
+    test_dataloader = DataLoader(MelDataset(dataset_config, mode="test"),
+                                 batch_size=1,
                                  shuffle=True,
                                  pin_memory=True,
                                  num_workers=dataset_config["num_workers"])

@@ -18,11 +18,13 @@ class FreGan(LightningModule):
         super().__init__()
         self.save_hyperparameters()
         fre_gan_config = config["fre-gan"]
+        self.dataset_config = config["dataset"]
 
         for key, value in fre_gan_config.items():
             setattr(self, key, value)
 
         self.generator = RCG(config["rcg"])
+        self.grad_step = 0
 
         if val_loader is not None:
             self.val_samples = [batch for batch in val_loader]
@@ -38,7 +40,8 @@ class FreGan(LightningModule):
         y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
         total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.current_device
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd,
+            self.dataset_config, self.current_device
         )
 
         gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
@@ -82,11 +85,11 @@ class FreGan(LightningModule):
         if self.optimizer == "Adam":
             opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.Adam(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                     lr=self.lr * 0.1, betas=(self.b1, self.b2))
+                                     lr=self.lr, betas=(self.b1, self.b2))
         else:
             opt_g = torch.optim.AdamW(self.generator.parameters(), lr=self.lr, betas=(self.b1, self.b2))
             opt_d = torch.optim.AdamW(chain(self.rp_discriminator.parameters(), self.sp_discriminator.parameters()),
-                                      lr=self.lr * 0.1, betas=(self.b1, self.b2))
+                                      lr=self.lr, betas=(self.b1, self.b2))
 
         scheduler_g = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.lr_decay)
         scheduler_d = torch.optim.lr_scheduler.ExponentialLR(opt_d, gamma=self.lr_decay)
@@ -101,6 +104,7 @@ class FreGan(LightningModule):
         self.generator.train()
         self.rp_discriminator.train()
         self.sp_discriminator.train()
+        self.grad_step += 1
 
         mel_spectrogram, y_true = batch
 
@@ -109,7 +113,7 @@ class FreGan(LightningModule):
             return self._generator_shared_step(y_gen, y_true, "train")
 
         # train / val discriminators
-        if optimizer_idx == 1:
+        if optimizer_idx == 1 and self.grad_step > self.warm_up_steps:
             y_gen = self.generator(mel_spectrogram)
             return self._discriminator_shared_step(y_gen, y_true, "train")
 
@@ -132,9 +136,10 @@ class FreGan(LightningModule):
             self._generator_shared_step(y_gen, y_true, "val")
 
             # log val discriminator loss
-            mel_spectrogram, y_true = batch
-            y_gen = self.generator(mel_spectrogram)
-            self._discriminator_shared_step(y_gen, y_true, "val")
+            if self.grad_step > self.warm_up_steps:
+                mel_spectrogram, y_true = batch
+                y_gen = self.generator(mel_spectrogram)
+                self._discriminator_shared_step(y_gen, y_true, "val")
 
     def on_train_epoch_end(self):
         if self.current_epoch % self.save_every_epoch == 0:
@@ -150,7 +155,7 @@ class FreGan(LightningModule):
                     original = original.detach().cpu().numpy()
 
                     if np.max(abs(generated)) > 1:
-                        original /= np.max(abs(generated))
+                        generated /= np.max(abs(generated))
 
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}
