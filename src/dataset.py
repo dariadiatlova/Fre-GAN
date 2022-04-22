@@ -62,7 +62,7 @@ class MelDataset(Dataset):
             return self.dataset_size
         return self._n_samples
 
-    def __getitem__(self, idx: int) -> Optional[torch.Tensor, ...]:
+    def __getitem__(self, idx: int) -> Optional[torch.Tensor, torch.Tensor]:
         mel_spectrogram, audio = self.__compute_mel_spectrogram(self.wav_files[idx])
         return mel_spectrogram, audio
 
