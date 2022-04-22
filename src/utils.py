@@ -29,6 +29,7 @@ def get_file_names(tsv_filepath: str, root_path: str, speaker_id: Optional[int] 
     """
     df = pd.read_csv(tsv_filepath, sep='\t')
     if speaker_id:
+        # use only 1 speaker audios for training / validation
         df = df[df.client_id == speaker_id]
     mp3_filenames = np.array(df.path)
     pattern = re.compile(".*(?=.mp3)")
@@ -58,7 +59,7 @@ def load_audio(audio_filepath: str, sample_rate, logger_file: Optional[str] = No
         return
 
 
-def pad_input_audio_signal(input_signal: np.ndarray, target_length: int) -> torch.Tensor:
+def pad_crop_audio(input_signal: np.ndarray, target_length: int) -> torch.Tensor:
     """
     Function takes input signal and align it with the target signal length.
     :param input_signal: np.ndarray

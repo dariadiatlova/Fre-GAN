@@ -144,18 +144,16 @@ class FreGan(LightningModule):
     def on_train_epoch_end(self):
         if self.current_epoch % self.save_every_epoch == 0:
             self.generator.eval()
+            generator = self.generator.remove_weight_norm()
             idx = self.current_epoch if self.current_epoch < len(self.val_samples) else 0
 
             with torch.no_grad():
                 mels, wavs = self.val_samples[idx]
-                generated_samples = self.generator(mels.to(self.current_device))
+                generated_samples = generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
                     generated = generated.squeeze(0).squeeze(0).detach().cpu().numpy()
                     original = original.detach().cpu().numpy()
-
-                    if np.max(abs(generated)) > 1:
-                        generated /= np.max(abs(generated))
 
                     self.logger.experiment.log(
                         {"generated_audios": wandb.Audio(generated, caption=f"Generated_{i}", sample_rate=22050)}

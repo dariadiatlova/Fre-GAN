@@ -21,8 +21,8 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
     rsd_loss = 0
 
     for pdlr, pdlg, sdlr, sdlg in zip(period_d_outs_real, period_d_outs_gen, scale_d_outs_real, scale_d_outs_gen):
-        rpd_loss += torch.mean(torch.square((pdlr - torch.ones_like(pdlr)))) + torch.mean(torch.square(pdlg))
-        rsd_loss += torch.mean(torch.square((sdlr - torch.ones_like(sdlr)))) + torch.mean(torch.square(sdlg))
+        rpd_loss += torch.mean((pdlr - torch.ones_like(pdlr)) ** 2) + torch.mean(pdlg ** 2)
+        rsd_loss += torch.mean((sdlr - torch.ones_like(sdlr)) ** 2) + torch.mean(sdlg ** 2)
 
     return rpd_loss, rsd_loss
 
@@ -62,8 +62,8 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
     srd_adv_l = 0
 
     for prd, srd in zip(period_d_outs_gen, scale_d_outs_gen):
-        prd_adv_l += torch.mean(torch.square(prd - torch.ones_like(prd)))
-        srd_adv_l += torch.mean(torch.square(srd - torch.ones_like(srd)))
+        prd_adv_l += torch.mean((prd - torch.ones_like(prd)) ** 2)
+        srd_adv_l += torch.mean((srd - torch.ones_like(srd)) ** 2)
 
     rpd_fm_loss, rsd_fm_loss = _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen)
     stft_loss = _mel_spectrogram_loss(y_true, y_gen, device, dataset_config)
