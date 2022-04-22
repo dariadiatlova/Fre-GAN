@@ -28,6 +28,7 @@ class FreGan(LightningModule):
 
         if val_loader is not None:
             self.val_samples = [batch for batch in val_loader]
+        print(self.val_samples)
 
         self.rp_discriminator = RPD(self.current_device, config["rcg"]["negative_slope"])
         self.sp_discriminator = RSD(self.current_device, config["rcg"]["negative_slope"])
@@ -144,10 +145,9 @@ class FreGan(LightningModule):
         if self.current_epoch % self.save_every_epoch == 0:
             self.generator.eval()
             generator = self.generator.remove_weight_norm()
-            idx = self.current_epoch if self.current_epoch < len(self.val_samples) else 0
 
             with torch.no_grad():
-                mels, wavs = self.val_samples[idx]
+                mels, wavs = self.val_samples[0]
                 generated_samples = generator(mels.to(self.current_device))
 
                 for i, (original, generated) in enumerate(zip(wavs, generated_samples)):
