@@ -36,6 +36,8 @@ class MelDataset(Dataset):
 
     def _load_audios(self) -> Dict:
         wav_dict = {}
+        if self.dataset_size:
+            self.audio_files = self.audio_files[:self.dataset_size]
         for i, audio_file_path in enumerate(self.audio_files):
             audio = load_audio(audio_file_path, self.sr, self._log_file)
             audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
@@ -52,6 +54,8 @@ class MelDataset(Dataset):
         # pad / crop random part from audio signal
         if self.mode != "test":
             audio = pad_crop_audio(audio, self.target_audio_length)
+        else:
+            audio = torch.from_numpy(audio).type(torch.FloatTensor)
 
         mel_spectrogram = get_mel_spectrogram(audio, self.hop_size, self.n_mels, self.n_fft, self.power,
                                               self.target_sr, self.f_min, self.f_max, self.normalize_spec)
@@ -81,7 +85,7 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataL
                                 num_workers=dataset_config["num_workers"])
 
     test_dataloader = DataLoader(MelDataset(dataset_config, mode="test"),
-                                 batch_size=1,
+                                 batch_size=2,
                                  shuffle=True,
                                  pin_memory=True,
                                  num_workers=dataset_config["num_workers"])
