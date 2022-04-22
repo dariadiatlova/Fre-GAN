@@ -89,8 +89,10 @@ def get_mel_spectrogram(input_audio: torch.Tensor, hop_length: int, n_mels: int,
     mel_spectrogram = transforms.MelSpectrogram(sample_rate=sample_rate, n_fft=n_fft, hop_length=hop_length,
                                                 n_mels=n_mels, f_max=f_max, normalized=normalized,
                                                 onesided=True)
+    device = input_audio.device
     mel_spectrogram.power = power
     mel_basis = librosa.filters.mel(sr=sample_rate, n_fft=n_fft, n_mels=n_mels, fmin=f_min, fmax=f_max).T
-    mel_spectrogram.mel_scale.fb.copy_(torch.tensor(mel_basis).to(input_audio.device))
-    mel = mel_spectrogram(input_audio).clamp_(min=1e-5).log_()
-    return mel
+    mel_basis = torch.from_numpy(mel_basis)
+    mel_spectrogram.mel_scale.fb.copy_(mel_basis)
+    mel = mel_spectrogram(input_audio.to("cpu")).clamp_(min=1e-5).log_()
+    return mel.to(device)

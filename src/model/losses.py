@@ -27,12 +27,12 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
     return rpd_loss, rsd_loss
 
 
-def _mel_spectrogram_loss(y_true, y_gen, device: str, dataset_config: Dict):
-    mel_true = get_mel_spectrogram(y_true.to(device), dataset_config["hop_size"], dataset_config["n_mels"],
+def _mel_spectrogram_loss(y_true, y_gen, dataset_config: Dict):
+    mel_true = get_mel_spectrogram(y_true, dataset_config["hop_size"], dataset_config["n_mels"],
                                    dataset_config["n_fft"], dataset_config["power"], dataset_config["target_sr"],
                                    dataset_config["f_min"], dataset_config["f_max"], dataset_config["normalize_spec"])
 
-    mel_gen = get_mel_spectrogram(y_gen.to(device), dataset_config["hop_size"], dataset_config["n_mels"],
+    mel_gen = get_mel_spectrogram(y_gen, dataset_config["hop_size"], dataset_config["n_mels"],
                                   dataset_config["n_fft"], dataset_config["power"], dataset_config["target_sr"],
                                   dataset_config["f_min"], dataset_config["f_max"], dataset_config["normalize_spec"])
     return F.l1_loss(mel_true, mel_gen)
@@ -52,7 +52,7 @@ def _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_f
 
 def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
                    period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen,
-                   dataset_config, device: str):
+                   dataset_config):
 
     # parameters from the paper
     lambda_mel = 45
@@ -66,7 +66,7 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
         srd_adv_l += torch.mean((srd - torch.ones_like(srd)) ** 2)
 
     rpd_fm_loss, rsd_fm_loss = _feature_matching_loss(period_fm_real, period_fm_gen, scale_fm_real, scale_fm_gen)
-    stft_loss = _mel_spectrogram_loss(y_true, y_gen, device, dataset_config)
+    stft_loss = _mel_spectrogram_loss(y_true, y_gen, dataset_config)
 
     total_generator_loss = prd_adv_l + srd_adv_l + (lambda_fm * (rpd_fm_loss + rsd_fm_loss)) + (lambda_mel * stft_loss)
     return total_generator_loss, prd_adv_l + srd_adv_l, lambda_fm * (rpd_fm_loss + rsd_fm_loss), stft_loss * lambda_mel

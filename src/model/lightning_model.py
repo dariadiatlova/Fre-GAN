@@ -40,8 +40,7 @@ class FreGan(LightningModule):
         y_rsd_real, y_rsd_gen, real_fm_rsd, gen_fm_rsd = self.sp_discriminator(y_true.unsqueeze(1), y_gen)
 
         total_gen_loss, adv_loss, fm_loss, stft_loss = self.generator_loss_function(
-            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd,
-            self.dataset_config, self.current_device
+            y_rpd_gen, y_rsd_gen, y_true, y_gen, real_fm_rpd, gen_fm_rpd, real_fm_rsd, gen_fm_rsd, self.dataset_config
         )
 
         gen_log_dict = {f"{step}/generator_total_loss": total_gen_loss,
