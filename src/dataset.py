@@ -52,11 +52,7 @@ class MelDataset(Dataset):
         """
 
         # pad / crop random part from audio signal
-        if self.mode != "test":
-            audio = pad_crop_audio(audio, self.target_audio_length)
-        else:
-            audio = torch.from_numpy(audio).type(torch.FloatTensor)
-
+        audio = pad_crop_audio(audio, self.target_audio_length)
         mel_spectrogram = get_mel_spectrogram(audio, self.hop_size, self.n_mels, self.n_fft, self.power,
                                               self.target_sr, self.f_min, self.f_max, self.normalize_spec)
         return mel_spectrogram, audio
@@ -84,6 +80,7 @@ def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataL
                                 pin_memory=True,
                                 num_workers=dataset_config["num_workers"])
 
+    dataset_config["target_audio_length"] = dataset_config["target_sr"] * 5
     test_dataloader = DataLoader(MelDataset(dataset_config, mode="test"),
                                  batch_size=2,
                                  shuffle=True,
