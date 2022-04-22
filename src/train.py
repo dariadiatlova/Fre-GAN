@@ -1,7 +1,7 @@
 from typing import Dict
 
 import yaml
-from pytorch_lightning import seed_everything, Trainer
+from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
@@ -12,8 +12,6 @@ from src.model.lightning_model import FreGan
 def main(config: Dict):
     train_config = config["fre-gan"]
     wandb_config = config["wandb"]
-
-    seed_everything(train_config["seed"])
 
     wandb_logger = WandbLogger(
         save_dir="/content/drive/MyDrive/",
