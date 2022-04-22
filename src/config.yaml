@@ -33,7 +33,7 @@ fre-gan:
   val_every_epoch: 1
   optimizer: "AdamW"
   current_device: "cuda"
-  save_every_epoch: 1
+  save_every_epoch: 10
   warm_up_steps: 500
   lr: 0.0002
   b1: 0.8
