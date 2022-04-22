@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import torch
 import wandb
@@ -142,11 +144,10 @@ class FreGan(LightningModule):
 
     def on_train_epoch_end(self):
         if self.current_epoch % self.save_every_epoch == 0:
-            self.generator.eval()
 
             # copy generator class to remove weight norm while generating
-            GeneratorCopy = type('GeneratorCopy', self.generator.__bases__, dict(self.generator.__dict__))
-            generator = GeneratorCopy()
+            generator = copy.deepcopy(self.generator)
+            generator.eval()
             generator.remove_weight_norm()
 
             with torch.no_grad():
