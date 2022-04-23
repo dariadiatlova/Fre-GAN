@@ -33,8 +33,8 @@ fre-gan:
   optimizer: "AdamW"
   current_device: "cuda"
   save_every_epoch: 10
-  warm_up_steps: 5000
-  lr_gen: 0.002
+  warm_up_steps: 1000
+  lr_gen: 0.0002
   lr_dis: 0.0002
   b1: 0.8
   b2: 0.999
