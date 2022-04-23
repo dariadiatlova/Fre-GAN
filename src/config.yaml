@@ -1,6 +1,6 @@
 dataset:
   speaker_id: "391f19cc56c80b71950a424f9dff058a997032adeb86035391cb71d437f6de3168091c5a7aad0cbd28cc5ae0c66ba67c4e000ce26070c6d3e2810288267220b9"
-  dataset_size: null
+  dataset_size: 16
   filepath: "train.tsv"
   num_workers: 1
   batch_size: 8
