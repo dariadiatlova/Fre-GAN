@@ -1,6 +1,6 @@
 dataset:
   speaker_id: "391f19cc56c80b71950a424f9dff058a997032adeb86035391cb71d437f6de3168091c5a7aad0cbd28cc5ae0c66ba67c4e000ce26070c6d3e2810288267220b9"
-  dataset_size: 16
+  dataset_size: null
   filepath: "train.tsv"
   num_workers: 1
   batch_size: 8
@@ -34,16 +34,16 @@ fre-gan:
   current_device: "cuda"
   save_every_epoch: 10
   warm_up_steps: 1000
-  lr_gen: 0.0002
+  lr_gen: 0.0005
   lr_dis: 0.0002
   b1: 0.8
   b2: 0.999
-  lr_decay: 0.999
+  lr_decay: 0.99
 
 wandb:
   save_dir: null
   progress_bar_refresh_rate: 1
   checkpoint_directory: null
-  project: "Single-Speaker-Fre-GAN-Decreased-lr-Warm-up-5k"
+  project: "Single-Speaker-Fixed-mels-Warm-up-1k"
   offline: false
   log_every_n_steps: 8
