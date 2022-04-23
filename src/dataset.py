@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import librosa
 import torch
 import numpy as np
@@ -33,6 +35,7 @@ class MelDataset(Dataset):
 
         self.wav_files = self._load_audios()
         self._n_samples = len(self.audio_files)
+        self._cache = defaultdict()
 
     def _load_audios(self) -> Dict:
         wav_dict = {}
@@ -62,9 +65,12 @@ class MelDataset(Dataset):
             return self.dataset_size
         return self._n_samples
 
-    def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
-        mel_spectrogram, audio = self.__compute_mel_spectrogram(self.wav_files[idx])
-        return mel_spectrogram, audio
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        item = self._cache.get(idx, "empty")
+        if item == "empty":
+            return self.__compute_mel_spectrogram(self.wav_files[idx])
+        else:
+            return item
 
 
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
