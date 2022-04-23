@@ -14,7 +14,7 @@ dataset:
   n_fft: 1025
   n_mels: 80
   hop_size: 256
-  win_si1ze: 1024
+  win_size: 1024
   power: 1.0
 
 rcg:
