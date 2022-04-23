@@ -54,7 +54,7 @@ class MelDataset(Dataset):
         # pad / crop random part from audio signal
         audio = pad_crop_audio(audio, self.target_audio_length)
         mel_spectrogram = get_mel_spectrogram(audio, self.hop_size, self.win_size, self.n_mels, self.n_fft, self.power,
-                                              self.target_sr, self.f_min, self.f_max, self.normalize_spec)
+                                              self.target_sr, self.f_min, self.f_max)
         return mel_spectrogram, audio
 
     def __len__(self) -> int:
