@@ -55,7 +55,7 @@ class MelDataset(Dataset):
         audio = pad_crop_audio(audio, self.target_audio_length)
         mel_spectrogram = get_mel_spectrogram(audio, self.hop_size, self.win_size, self.n_mels, self.n_fft, self.power,
                                               self.target_sr, self.f_min, self.f_max)
-        return mel_spectrogram, audio.squeeze()
+        return mel_spectrogram, audio
 
     def __len__(self) -> int:
         if self.dataset_size:
@@ -64,7 +64,7 @@ class MelDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
         mel_spectrogram, audio = self.__compute_mel_spectrogram(self.wav_files[idx])
-        return mel_spectrogram, audio.unsqueeze(1)
+        return mel_spectrogram, audio
 
 
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
