@@ -64,7 +64,7 @@ class MelDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Optional[torch.Tensor]:
         mel_spectrogram, audio = self.__compute_mel_spectrogram(self.wav_files[idx])
-        return mel_spectrogram, audio.unsqueeze(1)
+        return mel_spectrogram, audio
 
 
 def get_dataloaders(dataset_config: Dict) -> Tuple[DataLoader, DataLoader, DataLoader]:
