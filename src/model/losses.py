@@ -55,7 +55,7 @@ def generator_loss(period_d_outs_gen, scale_d_outs_gen, y_true, y_gen,
                    dataset_config):
 
     # parameters from the paper
-    lambda_mel = 22
+    lambda_mel = 45
     lambda_fm = 2
 
     prd_adv_l = 0
