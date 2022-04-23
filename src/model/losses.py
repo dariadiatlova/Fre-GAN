@@ -28,6 +28,7 @@ def discriminator_loss(period_d_outs_real, period_d_outs_gen, scale_d_outs_real,
 
 
 def _mel_spectrogram_loss(y_true, y_gen, dataset_config: Dict):
+    print(y_true.shape, y_gen.shape)
     mel_true = get_mel_spectrogram(y_true, dataset_config["hop_size"], dataset_config["win_size"],
                                    dataset_config["n_mels"], dataset_config["n_fft"], dataset_config["power"],
                                    dataset_config["target_sr"], dataset_config["f_min"], dataset_config["f_max"])
