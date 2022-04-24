@@ -42,10 +42,9 @@ class MelDataset(Dataset):
         :return: 2 tensors: mel-spectrogram and original audio padded/truncated to the target_audio_length.
         """
         audio = load_audio(audio_file_path, self.sr, self._log_file)
-        resampled_audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
+        audio = librosa.resample(audio, orig_sr=self.sr, target_sr=self.target_sr)
 
         # control amplitudes are in a range [-1, 1]
-        audio = normalize(resampled_audio)
         audio = torch.FloatTensor(audio).type(torch.FloatTensor).unsqueeze(0)
 
         # pad from both sides or / truncate from right
