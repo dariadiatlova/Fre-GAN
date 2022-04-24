@@ -5,6 +5,8 @@ from typing import Dict
 
 from torch.nn.utils import weight_norm, remove_weight_norm
 
+from src.utils import init_weights
+
 
 class DilatedResidualBlock(nn.Module):
     def __init__(self, channels: int, kernel_size: int, negative_slope: int):
@@ -19,6 +21,7 @@ class DilatedResidualBlock(nn.Module):
             weight_norm(nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(7,),
                                   padding=self.__get_padding_size(kernel_size, 7))),
         ])
+        self.dilated_convolutions.apply(init_weights)
 
         self.convolutions = nn.ModuleList([
             weight_norm(nn.Conv1d(channels, channels, kernel_size=(kernel_size,), stride=(1,), dilation=(1,),
@@ -31,6 +34,7 @@ class DilatedResidualBlock(nn.Module):
                                   padding=self.__get_padding_size(kernel_size, 1))),
 
         ])
+        self.convolutions.apply(init_weights)
 
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
@@ -39,12 +43,11 @@ class DilatedResidualBlock(nn.Module):
         return int((kernel_size * dilation - dilation) / 2)
 
     def forward(self, x: torch.Tensor) -> None:
-        residual = x
         for dilated_conv_layer, conv_layer in zip(self.dilated_convolutions, self.convolutions):
-
-            x = dilated_conv_layer(self.leaky_relu(x))
-            x = conv_layer(self.leaky_relu(x))
-        return x + residual
+            residual = dilated_conv_layer(self.leaky_relu(x))
+            residual = conv_layer(self.leaky_relu(residual))
+            x = x + residual
+        return x
 
 
 class RCG(nn.Module):
@@ -58,6 +61,7 @@ class RCG(nn.Module):
 
         self.conv1 = weight_norm(nn.Conv1d(80, 512, kernel_size=(7,), stride=(1,), padding=(3,)))
         self.conv_out = weight_norm(nn.Conv1d(16, 1, kernel_size=(7,), stride=(1,), padding=(3,)))
+        self.conv_out.apply(init_weights)
         self.leaky_relu = nn.LeakyReLU(negative_slope=self.negative_slope)
 
         self.conv_transposed_block = nn.ModuleList([
@@ -67,6 +71,7 @@ class RCG(nn.Module):
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(32, 16, kernel_size=(4,), stride=(2,), padding=(1,)))
         ])
+        self.conv_transposed_block.apply(init_weights)
 
         self.residual_up_sampling = nn.ModuleList([
             nn.Sequential(nn.Upsample(scale_factor=2, mode='nearest'),
@@ -76,6 +81,7 @@ class RCG(nn.Module):
             nn.Sequential(nn.Upsample(scale_factor=2, mode='nearest'),
                           weight_norm(nn.Conv1d(32, 16, kernel_size=(1,))))
         ])
+        self.residual_up_sampling.apply(init_weights)
 
         self.condition_up_sampling = nn.ModuleList([
             weight_norm(nn.ConvTranspose1d(80, 256, kernel_size=(16,), stride=(8,), padding=(4,))),
@@ -83,6 +89,7 @@ class RCG(nn.Module):
             weight_norm(nn.ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))),
             weight_norm(nn.ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))),
         ])
+        self.condition_up_sampling.apply(init_weights)
 
         self.residual_blocks = self.__initialise_resblocks()
 
@@ -139,7 +146,6 @@ class RCG(nn.Module):
             self.dilated_residual = self.residual_blocks[residual_idx](x)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         self.res_block_output = None
         self.mel_spectrogram = x
         x = self.conv1(x)

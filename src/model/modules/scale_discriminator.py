@@ -1,32 +1,33 @@
 import torch
 import torch.nn as nn
 
-from torch.nn.utils import weight_norm
+from torch.nn.utils import weight_norm, spectral_norm
 
 from src.model.dwt import DiscreteWaveletTransform
 
 
 class SubDiscriminator(nn.Module):
-    def __init__(self, device: str, negative_slope: float):
+    def __init__(self, device: str, negative_slope: float, use_spectral_norm: bool = False):
         super(SubDiscriminator, self).__init__()
         self.DWT = DiscreteWaveletTransform(device)
+        norm_f = weight_norm if not use_spectral_norm else spectral_norm
 
         self.dwt_conv_layers = nn.ModuleList([
-            weight_norm(nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7)),
-            weight_norm(nn.Conv1d(4, 128, kernel_size=(41,), stride=(2,), padding=20)),
+            norm_f(nn.Conv1d(2, 128, kernel_size=(15,), stride=(1,), padding=7)),
+            norm_f(nn.Conv1d(4, 128, kernel_size=(41,), stride=(2,), padding=20)),
             ])
 
         self.convolution_layers = nn.ModuleList([
-            weight_norm(nn.Conv1d(1, 128, kernel_size=(15,), stride=(1,), padding=7)),
-            weight_norm(nn.Conv1d(128, 128, kernel_size=(41,), groups=4, stride=(1,), padding=20)),
-            weight_norm(nn.Conv1d(128, 256, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
-            weight_norm(nn.Conv1d(256, 512, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
-            weight_norm(nn.Conv1d(512, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
-            weight_norm(nn.Conv1d(1024, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
-            weight_norm(nn.Conv1d(1024, 1024, kernel_size=(5,), stride=(1,), padding=2)),
+            norm_f(nn.Conv1d(1, 128, kernel_size=(15,), stride=(1,), padding=7)),
+            norm_f(nn.Conv1d(128, 128, kernel_size=(41,), groups=4, stride=(1,), padding=20)),
+            norm_f(nn.Conv1d(128, 256, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            norm_f(nn.Conv1d(256, 512, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            norm_f(nn.Conv1d(512, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            norm_f(nn.Conv1d(1024, 1024, kernel_size=(41,), groups=16, stride=(1,), padding=20)),
+            norm_f(nn.Conv1d(1024, 1024, kernel_size=(5,), stride=(1,), padding=2)),
         ])
 
-        self.convolution_out_layer = weight_norm(nn.Conv1d(1024, 1, kernel_size=(3,), stride=(1,), padding=1))
+        self.convolution_out_layer = norm_f(nn.Conv1d(1024, 1, kernel_size=(3,), stride=(1,), padding=1))
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
         self.dwt_cache = None
 
@@ -82,7 +83,7 @@ class RSD(nn.Module):
             weight_norm(nn.Conv1d(4, 1, kernel_size=(1,), stride=(1,), padding=0)),
             ])
         self.discriminators = nn.ModuleList([
-            SubDiscriminator(device, negative_slope),
+            SubDiscriminator(device, negative_slope, use_spectral_norm=True),
             SubDiscriminator(device, negative_slope),
             SubDiscriminator(device, negative_slope)
         ])

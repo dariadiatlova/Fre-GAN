@@ -77,3 +77,9 @@ def normalize_amplitudes(signal: np.ndarray) -> np.ndarray:
     if max_value > 1:
         signal = signal / max_value
     return signal
+
+
+def init_weights(m, mean=0.0, std=0.01):
+    classname = m.__class__.__name__
+    if classname.find("Conv") != -1:
+        m.weight.data.normal_(mean, std)
