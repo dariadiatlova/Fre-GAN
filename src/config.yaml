@@ -41,7 +41,7 @@ fre-gan:
 
 wandb:
   progress_bar_refresh_rate: 1
-  checkpoint_directory: "/content/drive/MyDrive/wandb/run-20220424_182311-2965l89s/epoch=9-step=1760.ckpt"
+  checkpoint_directory: "/content/drive/MyDrive/wandb/run-20220424_182311-2965l89s/files/epoch=9-step=1760.ckpt"
   project: "Fix-residual-FreGAN"
   offline: false
   log_every_n_steps: 1
