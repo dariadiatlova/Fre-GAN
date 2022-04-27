@@ -28,12 +28,12 @@ rcg:
 
 fre-gan:
   seed: 7
-  epochs: 20
+  epochs: 15
   n_gpus: 1
-  val_every_epoch: 10
+  val_every_epoch: 5
   optimizer: "AdamW"
   current_device: "cuda"
-  save_every_epoch: 10
+  save_every_epoch: 5
   lr: 0.0002
   b1: 0.8
   b2: 0.99
@@ -41,7 +41,7 @@ fre-gan:
 
 wandb:
   progress_bar_refresh_rate: 1
-  checkpoint_directory: "/content/drive/MyDrive/VKResearch/epoch=9-step=1760.ckpt"
+  checkpoint_directory: "/content/drive/MyDrive/wandb/run-20220424_182311-2965l89s/epoch=9-step=1760.ckpt"
   project: "Fix-residual-FreGAN"
   offline: false
   log_every_n_steps: 1
